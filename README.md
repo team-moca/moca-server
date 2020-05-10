@@ -20,4 +20,4 @@ These instructions are for a linux installation. You may have to alter these ins
 Here you can find a list of snippets or examples which are useful for developing on the server.
 
 ### Generate code
-
+Just run `make`. You can also clean the generated files by running `make clean`.
