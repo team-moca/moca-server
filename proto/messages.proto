@@ -1,0 +1,116 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "types.proto";
+
+message MessageMeta {
+    string message_id = 1;
+    string service_id = 2;
+    string from_user_id = 3;
+    string to_user_id = 4;
+    google.protobuf.Timestamp timestamp = 5;
+    bool disable_notifications = 6; // This is a tg-only feature.
+}
+
+// This is the most basic form of a message: its just a text message
+message Message {
+    MessageMeta meta = 1;
+    MessageContent content = 2;
+}
+
+message MessageContent {
+    oneof MessageContent {
+        TextMessageContent text_message = 1;
+        DocumentMessageContent document_message = 2;
+        PhotoMessageContent photo_message = 3;
+        AudioMessageContent audio_message = 4;
+        VideoMessageContent video_message = 5;
+        AnimationMessageContent animation_message = 6;
+        VoiceMessageContent voice_message = 7;
+        VideoNoteMessageContent video_note_message = 8;
+        MediaGroupMessageContent media_group_message = 9;
+        LocationMessageContent location_message = 10;
+        ContactMessageContent contact_message = 11;
+        PollMessageContent poll_message = 12;
+        DiceMessageContent dice_message = 13;
+        StickerMessageContent sticker_message = 14;
+    }
+}
+
+
+message TextMessageContent {
+    string content = 1;
+}
+
+// This is the most basic type. All other media types should be able to fall
+// back to document.
+message DocumentMessageContent {
+    string caption = 1;
+    string url = 2;
+
+}
+
+message PhotoMessageContent {
+    string caption = 1;
+    string url = 2;
+}
+
+message AudioMessageContent {
+    string caption = 1;
+    string url = 2;
+}
+
+message VideoMessageContent {
+    string caption = 1;
+    string url = 2;
+}
+
+// GIFs and MP4s, MP4s could fallback to VideoMessage.
+message AnimationMessageContent {
+    string caption = 1;
+    string url = 2;
+}
+
+// Fallback to AudioMessage
+message VoiceMessageContent {
+    string caption = 1;
+    string url = 2;
+}
+
+// Fallback to VideoMessage
+message VideoNoteMessageContent {
+    string caption = 1;
+    string url = 2;
+}
+
+// (Photo, Video)
+message MediaGroupMessageContent {
+    repeated PhotoMessageContent photos = 1;
+    repeated VideoMessageContent videos = 2;
+}
+
+message LocationMessageContent {
+    string caption = 1;
+    Location location = 2;
+}
+
+message ContactMessageContent {
+    string caption = 1;
+    string url = 2; // url to a vcard file?
+}
+
+// Fallback: A new project moca-poll-server? For now, on unsupported clients,
+// we will just write "{user} sent you a poll via {service}."
+message PollMessageContent {
+    // TODO: add relevant fields for polls
+}
+
+// Fallback: Send dice emoji along with a number
+message DiceMessageContent {
+    DiceType dice_type = 1;
+}
+
+// Fallbacks: animated -> GIF, static -> image
+message StickerMessageContent {
+
+}

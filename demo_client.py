@@ -14,17 +14,25 @@ timestamp.GetCurrentTime()
 message_meta = messages_pb2.MessageMeta(
     message_id = "M01",
     service_id = "S01",
-    user_id = "U01",
+    from_user_id = "U01",
+    to_user_id = "U02",
     timestamp = timestamp
 )
 
-message = messages_pb2.Message(
+response = stub.SendMessage(messages_pb2.Message(
     meta = message_meta,
-    content = "Lorem ipsum"
-)
-
-response = stub.SendMessage(message)
+    content = messages_pb2.MessageContent(
+        text_message = messages_pb2.TextMessageContent(content="Lorem ipsum")
+    )
+))
 print(response.status)
 
-response = stub.SendPollMessage(message)
+print("-------------")
+
+response = stub.SendMessage(messages_pb2.Message(
+    meta = message_meta,
+    content = messages_pb2.MessageContent(
+        poll_message = messages_pb2.PollMessageContent()
+    )
+))
 print(response.status)

@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+import "messages.proto";
+
+service ClientConnector {
+
+    // This should always be run on app/client start.
+    rpc CheckCompatibility(SemVer) returns (CompatibilityInfo) {}
+
+    rpc SendMessage(Message) returns (SendMessageResponse) {}
+    rpc SubscribeToMessages(SubscribeToMessagesParams) returns (stream Message) {}
+}
+
+message SubscribeToMessagesParams {}
+
+// A server should accept all clients of at least the same minor versions.
+// By setting compatible to false, the server can force
+// the client to update before connecting. 
+message CompatibilityInfo {
+    bool compatible = 1;
+    SemVer server_version = 2;
+}
+
+message SemVer {
+    int32 major = 1;
+    int32 minor = 2;
+    int32 patch = 3;
+}
+
+enum SendMessageStatus {
+    OK = 0;
+    UNKNOWN_FAILURE = 1;
+    MESSAGE_NOT_IMPLEMENTED_FOR_SERVICE = 2;
+}
+
+
+message SendMessageResponse {
+    SendMessageStatus status = 1;
+}
+
