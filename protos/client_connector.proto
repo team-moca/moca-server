@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
+import "messages.proto";
 
 service ClientConnector {
 
@@ -39,113 +39,6 @@ message SemVer {
     int32 patch = 3;
 }
 
-message MessageMeta {
-    string message_id = 1;
-    string service_id = 2;
-    string user_id = 3;
-    google.protobuf.Timestamp timestamp = 4;
-    bool disable_notifications = 5; // This is a tg-only feature.
-}
-
-// This is the most basic form of a message: its just a text message
-message Message {
-    MessageMeta meta = 1;
-    string content = 2;
-}
-
-// This is the most basic type. All other media types should be able to fall
-// back to document.
-message DocumentMessage {
-    MessageMeta meta = 1;
-    string caption = 2;
-    string url = 3;
-
-}
-
-message PhotoMessage {
-    MessageMeta meta = 1;
-    string caption = 2;
-    string url = 3;
-}
-
-message AudioMessage {
-    MessageMeta meta = 1;
-    string caption = 2;
-    string url = 3;
-}
-
-message VideoMessage {
-    MessageMeta meta = 1;
-    string caption = 2;
-    string url = 3;
-}
-
-// GIFs and MP4s, MP4s could fallback to VideoMessage.
-message AnimationMessage {
-    MessageMeta meta = 1;
-    string caption = 2;
-    string url = 3;
-}
-
-// Fallback to AudioMessage
-message VoiceMessage {
-    MessageMeta meta = 1;
-    string caption = 2;
-    string url = 3;
-}
-
-// Fallback to VideoMessage
-message VideoNoteMessage {
-    MessageMeta meta = 1;
-    string caption = 2;
-    string url = 3;
-}
-
-// (Photo, Video)
-message MediaGroupMessage {
-    MessageMeta meta = 1;
-    repeated PhotoMessage photos = 2;
-    repeated VideoMessage videos = 3;
-}
-
-message LocationMessage {
-    MessageMeta meta = 1;
-    string caption = 2;
-    Location location = 3;
-}
-
-message ContactMessage {
-    MessageMeta meta = 1;
-    string caption = 2;
-    string url = 3; // url to a vcard file?
-}
-
-// Fallback: A new project moca-poll-server? For now, on unsupported clients,
-// we will just write "{user} sent you a poll via {service}."
-message PollMessage {
-    MessageMeta meta = 1;
-    string caption = 2;
-    string url = 3;
-    // TODO: add relevant fields for polls
-}
-
-enum DiceType {
-    DICE = 0;
-    TARGET = 1;
-}
-
-// Fallback: Send dice emoji along with a number
-message DiceMessage {
-    MessageMeta meta = 1;
-    DiceType dice_type = 2;
-}
-
-// Fallbacks: animated -> GIF, static -> image
-message StickerMessage {
-    MessageMeta meta = 1;
-
-}
-
 enum SendMessageStatus {
     OK = 0;
     UNKNOWN_FAILURE = 1;
@@ -157,11 +50,3 @@ message SendMessageResponse {
     SendMessageStatus status = 1;
 }
 
-// Locations are represented as latitude-longitude pairs in the E7 repr.
-// (degrees multiplied by 10**7 and rounded to the nearest integer).
-// Latitudes should be in the range +/- 90 degrees and longitude should be in
-// the range +/- 180 degrees (inclusive).
-message Location {
-    int32 latitude = 1;
-    int32 longitude = 2;
-}
