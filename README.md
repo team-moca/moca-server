@@ -21,3 +21,19 @@ Here you can find a list of snippets or examples which are useful for developing
 
 ### Generate code
 Just run `make`. You can also clean the generated files by running `make clean`.
+
+## Architecture
+
+Client --c o-- [ClientConnector] Server --c o-- [ServiceConnector] Service
+
+
+Client SendMessage --> Server --> SendMessage to Service
+Client SubMsg --> Server SubMsg --> Service
+Client Login --> Server Login --> Service
+
+## Official Services
+
+| Service  | UUID                                 | Default Port |
+|----------|--------------------------------------|--------------|
+| Telegram | 0aed2fc7-29b3-4193-9a66-393d325c7846 | 50061        |
+| WhatsApp | 2f307683-0e2d-42c8-9498-b82fa0989bfc | 50062        |

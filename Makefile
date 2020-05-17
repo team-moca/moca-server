@@ -1,7 +1,7 @@
 default: python
 
 python:
-	python -m grpc_tools.protoc -I./proto --python_out=. --grpc_python_out=. ./proto/*.proto
+	python -m grpc_tools.protoc -I./proto -I../moca-proto --python_out=. --grpc_python_out=. ./proto/*.proto ../moca-proto/*.proto
 
 all: python
 
