@@ -8,7 +8,6 @@ import grpc
 import messages_pb2
 from google.protobuf.timestamp_pb2 import Timestamp
 
-
 def run():
 
     with grpc.insecure_channel("localhost:50051") as channel:
@@ -29,7 +28,7 @@ def run():
             messages_pb2.Message(
                 meta=message_meta,
                 content=messages_pb2.MessageContent(
-                    text_message=messages_pb2.TextMessageContent(content="Lorem ipsum")
+                    text_message=messages_pb2.TextMessageContent(content="I'm sending a message from ☕ to ✈️")
                 ),
             )
         )
@@ -59,9 +58,9 @@ def run():
 
         print("now subscribing to messages...")
         while True:
+
             for message in stub.SubscribeToMessages(client.SubscribeToMessagesParams()):
                 print(message)
-
 
 if __name__ == "__main__":
     logging.basicConfig()
