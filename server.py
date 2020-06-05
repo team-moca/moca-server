@@ -1,7 +1,7 @@
 import logging
 from concurrent import futures
 from uuid import UUID, uuid4
-
+import time
 import client_connector_pb2 as client
 import client_connector_pb2_grpc as client_grpc
 import grpc
@@ -25,27 +25,28 @@ class ClientConnectorServicer(client_grpc.ClientConnectorServicer):
     def SubscribeToMessages(self, request, context):
         print("subscribing to new messages...")
 
-        timestamp = Timestamp()
-        timestamp.GetCurrentTime()
+        while True:
+            timestamp = Timestamp()
+            timestamp.GetCurrentTime()
 
-        message_meta = messages_pb2.MessageMeta(
-            message_id=uuid4().bytes,
-            service_id=UUID("54b4ae1c-1c6f-4f7e-b2b9-efd7bf5e894b").bytes,
-            from_user_id=UUID("8c43ba0c-92b3-11ea-bb37-0242ac130002").bytes,
-            to_user_id=UUID("78f3647d-1e12-4bca-8ce5-a6e5f2da0508").bytes,
-            timestamp=timestamp,
-        )
+            message_meta = messages_pb2.MessageMeta(
+                message_id=uuid4().bytes,
+                service_id=UUID("54b4ae1c-1c6f-4f7e-b2b9-efd7bf5e894b").bytes,
+                from_user_id=str(UUID("8c43ba0c-92b3-11ea-bb37-0242ac130002")),
+                to_user_id=str(UUID("78f3647d-1e12-4bca-8ce5-a6e5f2da0508")),
+                timestamp=timestamp,
+            )
 
-        message = messages_pb2.Message(
-            meta=message_meta,
-            content=messages_pb2.MessageContent(
-                text_message=messages_pb2.TextMessageContent(
-                    content="You subscribed to messages"
-                )
-            ),
-        )
-
-        yield message
+            message = messages_pb2.Message(
+                meta=message_meta,
+                content=messages_pb2.MessageContent(
+                    text_message=messages_pb2.TextMessageContent(
+                        content="You subscribed to messages"
+                    )
+                ),
+            )
+            yield message
+            time.sleep(1)
 
 
 def serve():
