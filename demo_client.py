@@ -2,15 +2,16 @@ import logging
 import time
 from uuid import UUID, uuid4
 
-import client_connector_pb2 as client
-import client_connector_pb2_grpc as client_grpc
+import anyio
+import purerpc
+from libmoca import client_connector_pb2 as client
+from libmoca import client_connector_grpc as client_grpc
 import grpc
-import messages_pb2
+from libmoca import messages_pb2
 from google.protobuf.timestamp_pb2 import Timestamp
 
-def run():
-
-    with grpc.insecure_channel("localhost:50051") as channel:
+async def main():
+    async with purerpc.insecure_channel("localhost", 50051) as channel:
         stub = client_grpc.ClientConnectorStub(channel)
 
         timestamp = Timestamp()
@@ -24,7 +25,7 @@ def run():
             timestamp=timestamp,
         )
 
-        response = stub.SendMessage(
+        response = await stub.SendMessage(
             messages_pb2.Message(
                 meta=message_meta,
                 content=messages_pb2.MessageContent(
@@ -32,7 +33,7 @@ def run():
                 ),
             )
         )
-        print(response.status)
+        print(f"Send message status: {response.status}")
 
         print("-------------")
 
@@ -46,7 +47,7 @@ def run():
             timestamp=timestamp,
         )
 
-        response = stub.SendMessage(
+        response = await stub.SendMessage(
             messages_pb2.Message(
                 meta=message_meta,
                 content=messages_pb2.MessageContent(
@@ -54,14 +55,17 @@ def run():
                 ),
             )
         )
-        print(response.status)
+        print(f"Send poll message status: {response.status}")
 
+        
         print("now subscribing to messages...")
         while True:
 
-            for message in stub.SubscribeToMessages(client.SubscribeToMessagesParams()):
+            async for message in stub.SubscribeToMessages(client.SubscribeToMessagesParams()):
                 print(message)
+        
+
 
 if __name__ == "__main__":
     logging.basicConfig()
-    run()
+    anyio.run(main, backend="asyncio")
