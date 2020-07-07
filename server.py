@@ -1,14 +1,44 @@
-from flask import Flask
+from flask import Flask, request
 from flask_restx import Api, Resource, fields
+from werkzeug.security import safe_str_cmp
+from functools import wraps
+from flask_httpauth import HTTPTokenAuth
+
+authorization = HTTPTokenAuth(scheme='Bearer')
+
+tokens = {
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6ImprYWhud2FsZCIsImlhdCI6MTUxNjIzOTAyMn0.meNzV4ABOhmN_CxmzBkzTH1m4gpdEv3vrJBl89dllgY': 'jkahnwald'
+}
+
+@authorization.verify_token
+def verify_token(token):
+    if token in tokens:
+        return tokens[token]
+
+@authorization.error_handler
+def authorization_error(status):
+    return {'message': 'Unauthorized'}, status
 
 app = Flask(__name__)
+
+authorizations = {
+    'jwt': {
+        'type': 'apiKey',
+        'in': 'header',
+        'name': 'Authorization'
+    }
+}
+
 api = Api(app,
         title="MOCA Server API",
         version="0.1.0",
-        description="REST API reference for mobile and web clients connecting to MOCA Server."
+        description="REST API reference for mobile and web clients connecting to MOCA Server.",
+        authorizations=authorizations,
+        security=[]
         )
 
-chats = api.namespace('chats', description='chats operations')
+chats = api.namespace('chats', description='Chat operations')
+auth = api.namespace('auth', description="Authentication")
 
 contact_model = api.model('Contact', {
     'service_id': fields.String,
@@ -31,6 +61,15 @@ pin_model = api.model('Pin', {
     'position': fields.Integer(description="Position from top (0). Omit to automatically place the chat in the pinned section.", min=0),
 })
 
+credentials_model = api.model('Credentials',{
+    'username': fields.String(example="jkahnwald"),
+    'hash': fields.String(description="The hash can be calculated like this: sha1(username + password). Username and password must be utf-8 encoded.")
+})
+
+token_model = api.model('Token', {
+    'token': fields.String(description="A JWT token that can be used to access restricted resources.")
+})
+
 class Contact(object):
     def __init__(self, service_id, contact_id, name):
         self.service_id = service_id
@@ -43,8 +82,17 @@ class Chat(object):
         self.name = name
         self.contacts = contacts
 
+@api.route('/test')
+class Test(Resource):
+    @authorization.login_required
+    @api.doc(security=["jwt"])
+    def get(self):
+        return {'hello': f'{authorization.current_user()}'}
+
 @chats.route('/')
 class ChatsResource(Resource):
+    @authorization.login_required
+    @chats.doc(security=["jwt"])
     @chats.marshal_list_with(chat_model)
     @chats.doc("list_chats")
     def get(self, **kwargs):
@@ -56,6 +104,8 @@ class ChatsResource(Resource):
 
 @chats.route('/<string:id>')
 class ChatResource(Resource):
+    @authorization.login_required
+    @chats.doc(security=["jwt"])
     @chats.doc('delete_chat')
     @chats.response(204, 'Chat deleted')
     def delete(self, id):
@@ -64,6 +114,8 @@ class ChatResource(Resource):
 
 @chats.route('/<string:id>/mute')
 class ChatMuteResource(Resource):
+    @authorization.login_required
+    @chats.doc(security=["jwt"])
     @chats.doc('mute')
     @chats.expect(mute_model)
     @chats.response(204, 'Chat muted')
@@ -71,6 +123,8 @@ class ChatMuteResource(Resource):
         '''Mute a chat.'''
         return '', 204
 
+    @authorization.login_required
+    @chats.doc(security=["jwt"])
     @chats.doc('unmute')
     @chats.response(204, 'Chat unmuted')
     def delete(self, id):
@@ -79,6 +133,8 @@ class ChatMuteResource(Resource):
 
 @chats.route('/<string:id>/pin')
 class ChatPinResource(Resource):
+    @authorization.login_required
+    @chats.doc(security=["jwt"])
     @chats.doc('pin')
     @chats.expect(pin_model)
     @chats.response(204, 'Chat pinned')
@@ -86,11 +142,38 @@ class ChatPinResource(Resource):
         '''Pin a chat.'''
         return '', 204
 
+    @authorization.login_required
+    @chats.doc(security=["jwt"])
     @chats.doc('unpin')
     @chats.response(204, 'Chat unpinned')
     def delete(self, id):
         '''Unpin a chat.'''
         return '', 204
+
+@auth.route('/login')
+class AuthLoginResource(Resource):
+    @auth.doc('login')
+    @authorization.login_required
+    @auth.doc(security=["jwt"])
+    @auth.expect(credentials_model)
+    @auth.response(401, 'Unauthorized')
+    @auth.marshal_with(token_model)
+    def post(self):
+        """Get a JWT."""
+        return {
+            'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
+        }
+
+@auth.route('/refresh')
+class AuthRefreshResource(Resource):
+    @auth.doc('refresh')
+    @auth.response(401, 'Unauthorized')
+    @auth.marshal_with(token_model)
+    def post(self):
+        """Get a new JWT. Use this when the current JWT is about to expire."""
+        return {
+            'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
+        }
 
 if __name__ == '__main__':
     app.run(debug=True)
