@@ -1,57 +1,96 @@
-import logging
-import asyncio
-from concurrent import futures
-from uuid import UUID, uuid4
-import time
-from libmoca import client_connector_pb2 as client
-from libmoca import client_connector_grpc as client_grpc
-import grpc
-from libmoca import messages_pb2
-from google.protobuf.timestamp_pb2 import Timestamp
-from purerpc import Server
+from flask import Flask
+from flask_restx import Api, Resource, fields
 
-class ClientConnector(client_grpc.ClientConnectorServicer):
-    def __init__(self):
-        print("starting server")
-
-    async def SendMessage(self, message):
-
-        if message.content.HasField("text_message"):
-            return messages_pb2.SendMessageResponse(
-                status=messages_pb2.SendMessageStatus.OK
-            )
-
-        return messages_pb2.SendMessageResponse(
-            status=messages_pb2.SendMessageStatus.MESSAGE_CONTENT_NOT_IMPLEMENTED_FOR_SERVICE
+app = Flask(__name__)
+api = Api(app,
+        title="MOCA Server API",
+        version="0.1.0",
+        description="REST API reference for mobile and web clients connecting to MOCA Server."
         )
 
-    async def SubscribeToMessages(self, message):
-        print("subscribing to new messages...")
+chats = api.namespace('chats', description='chats operations')
 
-        while True:
-            timestamp = Timestamp()
-            timestamp.GetCurrentTime()
+contact_model = api.model('Contact', {
+    'service_id': fields.String,
+    'contact_id': fields.String,
+    'name': fields.String
+})
 
-            message_meta = messages_pb2.MessageMeta(
-                message_id=uuid4().bytes,
-                service_id=UUID("54b4ae1c-1c6f-4f7e-b2b9-efd7bf5e894b").bytes,
-                from_user_id=str(UUID("8c43ba0c-92b3-11ea-bb37-0242ac130002")),
-                to_user_id=str(UUID("78f3647d-1e12-4bca-8ce5-a6e5f2da0508")),
-                timestamp=timestamp,
-            )
+chat_model = api.model('Chat', {
+    'chat_id': fields.String,
+    'name': fields.String,
+    'contacts': fields.List(fields.Nested(contact_model))
+})
 
-            message = messages_pb2.Message(
-                meta=message_meta,
-                content=messages_pb2.MessageContent(
-                    text_message=messages_pb2.TextMessageContent(
-                        content="You subscribed to messages"
-                    )
-                ),
-            )
-            yield message
-            await asyncio.sleep(1)
+mute_model = api.model('Mute', {
+    'duration': fields.Integer(description="Duration in seconds. Omit to mute until manually unmuted.", min=0, example=28800),
+    'allow_mentions': fields.Boolean(description="Bypasses mute if mentioned (e.g. @user hello...)", default=True)    
+})
 
+pin_model = api.model('Pin', {
+    'position': fields.Integer(description="Position from top (0). Omit to automatically place the chat in the pinned section.", min=0),
+})
 
-server = Server(50051)
-server.add_service(ClientConnector().service)
-server.serve(backend="asyncio")
+class Contact(object):
+    def __init__(self, service_id, contact_id, name):
+        self.service_id = service_id
+        self.contact_id = contact_id
+        self.name = name
+
+class Chat(object):
+    def __init__(self, chat_id, name, contacts):
+        self.chat_id = chat_id
+        self.name = name
+        self.contacts = contacts
+
+@chats.route('/')
+class ChatsResource(Resource):
+    @chats.marshal_list_with(chat_model)
+    @chats.doc("list_chats")
+    def get(self, **kwargs):
+        """Get a list of all chats the user has."""
+        return [
+            Chat('CHAT0', "Chat Zero", [Contact("TELEGRAM", "HGTannhaus", "H. G. Tannhaus")]),
+            Chat("CHAT1", "Chat One (Group Chat)", [Contact("WHATSAPP", "JKahnwald", "Jonas Kahnwald"), Contact("WHATSAPP", "MNielsen", "Martha Nielsen")])
+        ]
+
+@chats.route('/<string:id>')
+class ChatResource(Resource):
+    @chats.doc('delete_chat')
+    @chats.response(204, 'Chat deleted')
+    def delete(self, id):
+        '''Delete a chat and all its messages. Cannot be undone.'''
+        return '', 204
+
+@chats.route('/<string:id>/mute')
+class ChatMuteResource(Resource):
+    @chats.doc('mute')
+    @chats.expect(mute_model)
+    @chats.response(204, 'Chat muted')
+    def post(self, id):
+        '''Mute a chat.'''
+        return '', 204
+
+    @chats.doc('unmute')
+    @chats.response(204, 'Chat unmuted')
+    def delete(self, id):
+        '''Unmute a chat.'''
+        return '', 204
+
+@chats.route('/<string:id>/pin')
+class ChatPinResource(Resource):
+    @chats.doc('pin')
+    @chats.expect(pin_model)
+    @chats.response(204, 'Chat pinned')
+    def post(self, id):
+        '''Pin a chat.'''
+        return '', 204
+
+    @chats.doc('unpin')
+    @chats.response(204, 'Chat unpinned')
+    def delete(self, id):
+        '''Unpin a chat.'''
+        return '', 204
+
+if __name__ == '__main__':
+    app.run(debug=True)
