@@ -85,13 +85,6 @@ class Chat(object):
         self.name = name
         self.contacts = contacts
 
-@api.route('/test')
-class Test(Resource):
-    @authorization.login_required
-    @api.doc(security=["jwt"])
-    def get(self):
-        return {'hello': f'{authorization.current_user()}'}
-
 @chats.route('/')
 class ChatsResource(Resource):
     @authorization.login_required
