@@ -37,7 +37,7 @@ class Chat(object):
         self.name = name
         self.contacts = contacts
 
-@api.route('/')
+@api.route('')
 class ChatsResource(Resource):
     @auth.login_required
     @api.doc(security=["jwt"])

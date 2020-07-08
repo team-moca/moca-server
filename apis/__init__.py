@@ -1,10 +1,9 @@
 from flask_restx import Api
-from setuptools_scm import get_version
 
 from .auth import api as ns_auth
 from .chats import api as ns_chats
-
-app_version = get_version()
+from .info import api as ns_info
+from core.version_helper import app_version
 
 authorizations = {
     'jwt': {
@@ -22,5 +21,6 @@ api = Api(
             security=[]
         )
 
+api.add_namespace(ns_info, path='/info')
 api.add_namespace(ns_auth, path='/auth')
 api.add_namespace(ns_chats, path='/chats')
