@@ -1,1 +1,2 @@
 flask-restx
+setuptools-scm==4.1.2

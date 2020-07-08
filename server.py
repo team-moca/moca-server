@@ -3,6 +3,9 @@ from flask_restx import Api, Resource, fields
 from werkzeug.security import safe_str_cmp
 from functools import wraps
 from flask_httpauth import HTTPTokenAuth
+from setuptools_scm import get_version
+
+app_version = get_version()
 
 authorization = HTTPTokenAuth(scheme='Bearer')
 
@@ -31,7 +34,7 @@ authorizations = {
 
 api = Api(app,
         title="MOCA Server API",
-        version="0.1.0",
+        version=app_version,
         description="REST API reference for mobile and web clients connecting to MOCA Server.",
         authorizations=authorizations,
         security=[]
