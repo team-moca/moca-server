@@ -1,7 +1,9 @@
 from flask_restx import Namespace, Resource, fields
-from core.auth import auth
+from core.auth import auth, AuthManager
 
 api = Namespace('auth', description="Authentication")
+
+auth_manager = AuthManager()
 
 credentials_model = api.model('Credentials',{
     'username': fields.String(example="jkahnwald"),
@@ -16,24 +18,24 @@ token_model = api.model('Token', {
 @api.route('/login')
 class AuthLoginResource(Resource):
     @api.doc('login')
-    @auth.login_required
-    @api.doc(security=["jwt"])
     @api.expect(credentials_model)
     @api.response(401, 'Unauthorized')
     @api.marshal_with(token_model)
     def post(self):
         """Get a JWT."""
-        return {
-            'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
-        }
+        token = auth_manager.login(api.payload.get('username'), api.payload.get('hash'), api.payload.get('device_name'))
+        if token:
+            return { 'token': token.decode() }
+        
+        return '', 401
 
 @api.route('/refresh')
 class AuthRefreshResource(Resource):
     @api.doc('refresh')
+    @auth.login_required
+    @api.doc(security=["jwt"])
     @api.response(401, 'Unauthorized')
     @api.marshal_with(token_model)
     def post(self):
         """Get a new JWT. Use this when the current JWT is about to expire."""
-        return {
-            'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
-        }
+        return { 'token': auth_manager.refresh(auth.current_user().get("token")).decode() }
