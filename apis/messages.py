@@ -11,6 +11,10 @@ message_model = api.model('Message', {
     "message": fields.Raw(description="A JSON object representing the message. The object schema is based on the message type.")
 })
 
+delete_model = api.model('DeleteMessage', {
+    'delete_everywhere': fields.Boolean(description="Delete the message for all contacts, if possible.", default=True),
+})
+
 class Message(object):
     def __init__(self, from_user_id, to_user_id, service_id, message_type, message):
         self.from_user_id = from_user_id
@@ -56,6 +60,7 @@ class MessageResource(Resource):
     @auth.login_required
     @api.doc(security=["jwt"])
     @api.doc("delete_message")
+    @api.expect(delete_model)
     @api.response(204, 'Message deleted')
     @api.response(403, 'Message deletion failed because delete is disabled or nessage is too old to be deleted.')
     def delete(self, **kwargs):
