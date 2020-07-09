@@ -55,10 +55,38 @@ class MessageResource(Resource):
 
     @auth.login_required
     @api.doc(security=["jwt"])
-    @api.expect(message_model)
     @api.doc("delete_message")
     @api.response(204, 'Message deleted')
     @api.response(403, 'Message deletion failed because delete is disabled or nessage is too old to be deleted.')
     def delete(self, **kwargs):
         """Delete a message."""
+        return '', 204
+
+@api.route('/<string:chat_id>/messages/<string:message_id>/pin')
+class MessageResource(Resource):
+
+    @auth.login_required
+    @api.doc(security=["jwt"])
+    @api.marshal_list_with(message_model)
+    @api.doc("list_pinned_messages")
+    def get(self, **kwargs):
+        """List pinned message(s). Depending on the service implementation, the list might contain multiple, one or no messages."""
+        return [
+            Message(100, 200, "TELEGRAM", "text", {"content": "Hi, I'm a pinned message."}),
+        ]
+
+    @auth.login_required
+    @api.doc(security=["jwt"])
+    @api.doc("pin_message")
+    @api.response(204, 'Message pinned')
+    def post(self, **kwargs):
+        """Pin a message."""
+        return '', 204
+
+    @auth.login_required
+    @api.doc(security=["jwt"])
+    @api.doc("unpin_message")
+    @api.response(204, 'Message unpinned')
+    def delete(self, **kwargs):
+        """Unpin a message."""
         return '', 204
