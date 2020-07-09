@@ -1,6 +1,6 @@
 from flask_restx import Namespace, Resource, fields
 from core.auth import auth
-
+import enum
 
 api = Namespace('chats', description='Chat operations')
 
@@ -10,9 +10,15 @@ contact_model = api.model('Contact', {
     'name': fields.String
 })
 
+class ChatType(enum.Enum):
+    single = 'single'
+    multi = 'multi'
+    group = 'group'
+
 chat_model = api.model('Chat', {
     'chat_id': fields.String,
     'name': fields.String,
+    'chat_type': fields.String(description="Type of chat. single for a normal one to one chat, multi for a chat that combines the chat with one person via multiple services, group for groups (via exactly one service).", example="single", enum=ChatType._member_names_),
     'contacts': fields.List(fields.Nested(contact_model))
 })
 
@@ -36,8 +42,9 @@ class Contact(object):
         self.name = name
 
 class Chat(object):
-    def __init__(self, chat_id, name, contacts):
+    def __init__(self, chat_id, chat_type, name, contacts):
         self.chat_id = chat_id
+        self.chat_type = chat_type
         self.name = name
         self.contacts = contacts
 
@@ -50,8 +57,9 @@ class ChatsResource(Resource):
     def get(self, **kwargs):
         """Get a list of all chats the user has."""
         return [
-            Chat('CHAT0', "Chat Zero", [Contact("TELEGRAM", "HGTannhaus", "H. G. Tannhaus")]),
-            Chat("CHAT1", "Chat One (Group Chat)", [Contact("WHATSAPP", "JKahnwald", "Jonas Kahnwald"), Contact("WHATSAPP", "MNielsen", "Martha Nielsen")])
+            Chat('CHAT0', ChatType.single, "Chat Zero", [Contact("TELEGRAM", "HGTannhaus", "H. G. Tannhaus")]),
+            Chat("CHAT1", ChatType.group, "Chat One (Multi Chat)", [Contact("WHATSAPP", "silja_wa", "Silja"), Contact("TELEGRAM", "silja_tg", "Silja")]),
+            Chat("CHAT2", ChatType.group, "Chat Two (Group Chat)", [Contact("WHATSAPP", "JKahnwald", "Jonas Kahnwald"), Contact("WHATSAPP", "MNielsen", "Martha Nielsen")])
         ]
 
 @api.route('/<string:id>')

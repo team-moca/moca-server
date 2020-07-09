@@ -42,15 +42,16 @@ class AuthManager:
 
 @auth.verify_token
 def verify_token(token):
-    try:
-        payload = jwt.decode(token, secret, algorithms=['HS256'])
-        if payload.get('jti') not in invalidated_jtis:
-            return {
-                "token": token,
-                "payload": payload
-            }
-    except jwt.ExpiredSignatureError:
-        pass
+    if token:
+        try:
+            payload = jwt.decode(token, secret, algorithms=['HS256'])
+            if payload.get('jti') not in invalidated_jtis:
+                return {
+                    "token": token,
+                    "payload": payload
+                }
+        except jwt.ExpiredSignatureError:
+            pass
 
 @auth.error_handler
 def authorization_error(status):
