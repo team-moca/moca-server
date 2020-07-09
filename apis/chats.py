@@ -25,6 +25,10 @@ pin_model = api.model('Pin', {
     'position': fields.Integer(description="Position from top (0). Omit to automatically place the chat in the pinned section.", min=0),
 })
 
+archive_model = api.model('Archive', {
+    'auto_unarchive': fields.Boolean(description="Auto unarchiving unarchives a chat when new messages arrive. Otherwise chats stay in the archive and don't send notifications.", default=True),
+})
+
 class Contact(object):
     def __init__(self, service_id, contact_id, name):
         self.service_id = service_id
@@ -96,4 +100,23 @@ class ChatPinResource(Resource):
     @api.response(204, 'Chat unpinned')
     def delete(self, id):
         '''Unpin a chat.'''
+        return '', 204
+
+@api.route('/<string:id>/archive')
+class ChatArchiveResource(Resource):
+    @auth.login_required
+    @api.doc(security=["jwt"])
+    @api.doc('archive')
+    @api.expect(archive_model)
+    @api.response(204, 'Chat archived')
+    def post(self, id):
+        '''Archive a chat.'''
+        return '', 204
+
+    @auth.login_required
+    @api.doc(security=["jwt"])
+    @api.doc('unarchive')
+    @api.response(204, 'Chat unarchived')
+    def delete(self, id):
+        '''Unarchive a chat.'''
         return '', 204
