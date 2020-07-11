@@ -111,3 +111,5 @@ dmypy.json
 
 *_pb2*.py
 venv/
+
+.env

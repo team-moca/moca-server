@@ -4,8 +4,7 @@ from core.auth import auth
 api = Namespace('messages', description='Message operations')
 
 message_model = api.model('Message', {
-    "from_user_id": fields.Integer(description="Sender's user id", example=100),
-    "to_user_id": fields.Integer(description="Receipient's user id", example=200),
+    "contact_id": fields.Integer(description="Sender's contact id. If sending a message, this field will be ignored.", example=100),
     "service_id": fields.String(description="ID of the service this message has been / should be sent with", example="TELEGRAM"),
     "message_type": fields.String(description="Type of message.", example="text"),
     "message": fields.Raw(description="A JSON object representing the message. The object schema is based on the message type.")
@@ -16,9 +15,8 @@ delete_model = api.model('DeleteMessage', {
 })
 
 class Message(object):
-    def __init__(self, from_user_id, to_user_id, service_id, message_type, message):
-        self.from_user_id = from_user_id
-        self.to_user_id = to_user_id
+    def __init__(self, contact_id, service_id, message_type, message):
+        self.contact_id = contact_id
         self.service_id = service_id
         self.message_type = message_type
         self.message = message
@@ -32,8 +30,8 @@ class MessagesResource(Resource):
     def get(self, **kwargs):
         """List messages of a chat."""
         return [
-            Message(100, 200, "TELEGRAM", "text", {"content": "Hello two hundred, how are you?"}),
-            Message(200, 100, "TELEGRAM", "text", {"content": "I'm fine, thank you!"})
+            Message(100, "TELEGRAM", "text", {"content": "Hello two hundred, how are you?"}),
+            Message(200, "TELEGRAM", "text", {"content": "I'm fine, thank you!"})
         ]
 
     @auth.login_required
@@ -77,7 +75,7 @@ class MessageResource(Resource):
     def get(self, **kwargs):
         """List pinned message(s). Depending on the service implementation, the list might contain multiple, one or no messages."""
         return [
-            Message(100, 200, "TELEGRAM", "text", {"content": "Hi, I'm a pinned message."}),
+            Message(100, "TELEGRAM", "text", {"content": "Hi, I'm a pinned message."}),
         ]
 
     @auth.login_required
