@@ -14,6 +14,13 @@ These instructions are for a linux installation. You may have to alter these ins
 2. Activate venv: `source venv/bin/activate`
 3. Install dev dependencies: `pip install -r requirements-dev.txt`
 
+```
+(venv) $ python
+>>> from server import db
+>>> db.create_all()
+>>> exit()
+```
+
 
 ## Development Guides
 

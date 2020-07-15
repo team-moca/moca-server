@@ -2,6 +2,8 @@ from flask_restx import Namespace, Resource, fields
 from core.auth import auth
 from core.version_helper import app_version
 
+from models import User, Contact
+
 api = Namespace('info', description="General server information")
 
 info_model = api.model('ServerInfo', {
@@ -15,6 +17,13 @@ class InfoResource(Resource):
     @api.marshal_with(info_model)
     def get(self):
         """Get server  information."""
+
+        users = User.query.all()
+        print(f"Users: {users}")
+
+        contacts = Contact.query.all()
+        print(f"Contacts: {contacts}")
+
         return {
             'version': app_version,
             'last_supported_version': app_version,
