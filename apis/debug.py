@@ -25,7 +25,7 @@ class SeedResource(Resource):
         new_user = User(
             username="jkahnwald",
             mail="jkahnwald@stadt-winden.de",
-            password_hash="d82cd9650672484e27eb8413a4d6b30018741b6e",
+            password_hash="53fab271885be6d753d501940409376b94ca7b7a",
             is_verified=True,
 
         )

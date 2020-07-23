@@ -6,7 +6,7 @@ auth = HTTPTokenAuth(scheme='Bearer')
 secret = "J7rSEi4tVSB2tdRpubRRWQj5C3s5RwCC"
 
 users = {
-    'jkahnwald': 'd82cd9650672484e27eb8413a4d6b30018741b6e'
+    'jkahnwald': '53fab271885be6d753d501940409376b94ca7b7a'
 }
 
 invalidated_jtis = []

@@ -7,7 +7,7 @@ auth_manager = AuthManager()
 
 credentials_model = api.model('Credentials',{
     'username': fields.String(example="jkahnwald"),
-    'hash': fields.String(description="The hash can be calculated like this: sha1(username + password). Username and password must be utf-8 encoded.", example="d82cd9650672484e27eb8413a4d6b30018741b6e"),
+    'hash': fields.String(description="The hash can be calculated like this: sha1(username + password). Username and password must be utf-8 encoded.", example="53fab271885be6d753d501940409376b94ca7b7a"),
     'device_name': fields.String(description="The name of the device logging in. Can be a generated string based on the device properties (operating system, IP...) or a user given name.", example="MOCA Server API Playground")
 })
 
