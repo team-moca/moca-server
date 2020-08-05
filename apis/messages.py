@@ -1,12 +1,15 @@
 from flask_restx import Namespace, Resource, fields
 from core.auth import auth
+from core.extensions import db
+from models import Message as MessageModel
+import json
 
 api = Namespace('messages', description='Message operations')
 
 message_model = api.model('Message', {
+    "message_id": fields.Integer(description="Unique id identifying this message.", example=56183044),
     "contact_id": fields.Integer(description="Sender's contact id. If sending a message, this field will be ignored.", example=100),
-    "message_type": fields.String(description="Type of message.", example="text"),
-    "message": fields.Raw(description="A JSON object representing the message. The object schema is based on the message type.")
+    "message": fields.Raw(description="A JSON object representing the message. You can get the type by looking at the type property in this json.")
 })
 
 delete_model = api.model('DeleteMessage', {
@@ -14,9 +17,9 @@ delete_model = api.model('DeleteMessage', {
 })
 
 class Message(object):
-    def __init__(self, contact_id, message_type, message):
+    def __init__(self, message_id, contact_id, message):
+        self.message_id = message_id
         self.contact_id = contact_id
-        self.message_type = message_type
         self.message = message
 
 @api.route('/<string:chat_id>/messages')
@@ -25,20 +28,24 @@ class MessagesResource(Resource):
     @api.doc(security=["jwt"])
     @api.marshal_list_with(message_model)
     @api.doc("list_messages")
-    def get(self, **kwargs):
+    def get(self, chat_id, **kwargs):
         """List messages of a chat."""
-        return [
-            Message(100, "text", {"content": "Hello two hundred, how are you?"}),
-            Message(200, "text", {"content": "I'm fine, thank you!"})
-        ]
+
+        messages = db.session.query(MessageModel).filter(MessageModel.chat_id == chat_id).all()
+        return [Message(model.message_id, model.contact_id, json.loads(model.message)) for model in messages]
 
     @auth.login_required
     @api.doc(security=["jwt"])
     @api.expect(message_model)
     @api.doc("send_message")
     @api.response(204, 'Message sent')
-    def post(self, **kwargs):
+    def post(self, chat_id, **kwargs):
         """Send a message to a chat."""
+
+        new_message = MessageModel(chat_id=chat_id, contact_id=api.payload.get("contact_id"), message=json.dumps(api.payload.get("message")))
+        db.session.add(new_message)
+        db.session.commit()
+
         return '', 204
 
 @api.route('/<string:chat_id>/messages/<string:message_id>')
@@ -49,8 +56,14 @@ class MessageResource(Resource):
     @api.expect(message_model)
     @api.doc("edit_message")
     @api.response(204, 'Message edited')
-    def put(self, **kwargs):
+    def put(self, chat_id, message_id, **kwargs):
         """Edit a message."""
+        message = db.session.query(MessageModel).filter(MessageModel.chat_id == chat_id, MessageModel.message_id == message_id).first()
+
+        message.message = json.dumps(api.payload.message)
+
+        db.session.commit()
+
         return '', 204
 
     @auth.login_required
@@ -59,8 +72,12 @@ class MessageResource(Resource):
     @api.expect(delete_model)
     @api.response(204, 'Message deleted')
     @api.response(403, 'Message deletion failed because delete is disabled or nessage is too old to be deleted.')
-    def delete(self, **kwargs):
+    def delete(self, chat_id, message_id, **kwargs):
         """Delete a message."""
+
+        db.session.query(MessageModel).filter(MessageModel.chat_id == chat_id, MessageModel.message_id == message_id).delete()
+        db.session.commit()
+
         return '', 204
 
 @api.route('/<string:chat_id>/messages/<string:message_id>/pin')
@@ -73,7 +90,7 @@ class MessageResource(Resource):
     def get(self, **kwargs):
         """List pinned message(s). Depending on the service implementation, the list might contain multiple, one or no messages."""
         return [
-            Message(100, "text", {"content": "Hi, I'm a pinned message."}),
+            Message(100, {"content": "Hi, I'm a pinned message."}),
         ]
 
     @auth.login_required

@@ -3,6 +3,7 @@ from core.auth import auth
 from core.version_helper import app_version
 from core.extensions import db
 from models import User, Contact, Chat, Message
+import json
 
 api = Namespace('debug', description="Debugging only methods")
 
@@ -67,9 +68,9 @@ class SeedResource(Resource):
 
         # Create messages
 
-        msg1 = Message(chat_id=new_chat.chat_id, contact_id=contact_jkahnwald.contact_id, message="Hallo ihr alle! Ich bins, Jonas")
-        msg2 = Message(chat_id=new_chat.chat_id, contact_id=contact_jkahnwald.contact_id, message="Naa, was geht?")
-        msg3 = Message(chat_id=new_chat.chat_id, contact_id=contact_mnielsen.contact_id, message="Was wir wissen, ist ein Tropfen. Was wir nicht wissen, ist ein Ozean.")
+        msg1 = Message(chat_id=new_chat.chat_id, contact_id=contact_jkahnwald.contact_id, message=json.dumps({ "type": "text", "content": "Hallo ihr alle! Ich bins, Jonas" }))
+        msg2 = Message(chat_id=new_chat.chat_id, contact_id=contact_jkahnwald.contact_id, message=json.dumps({ "type": "text", "content": "Naa, was geht?" }))
+        msg3 = Message(chat_id=new_chat.chat_id, contact_id=contact_mnielsen.contact_id, message=json.dumps({ "type": "text", "content": "Was wir wissen, ist ein Tropfen. Was wir nicht wissen, ist ein Ozean." }))
 
         db.session.add(msg1)
         db.session.add(msg2)
