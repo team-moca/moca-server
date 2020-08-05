@@ -85,16 +85,6 @@ class MessageResource(Resource):
 
     @auth.login_required
     @api.doc(security=["jwt"])
-    @api.marshal_list_with(message_model)
-    @api.doc("list_pinned_messages")
-    def get(self, **kwargs):
-        """List pinned message(s). Depending on the service implementation, the list might contain multiple, one or no messages."""
-        return [
-            Message(100, {"content": "Hi, I'm a pinned message."}),
-        ]
-
-    @auth.login_required
-    @api.doc(security=["jwt"])
     @api.doc("pin_message")
     @api.response(204, 'Message pinned')
     def post(self, **kwargs):
