@@ -12,7 +12,9 @@ class User(db.Model):
     mail = db.Column(db.String(255))
     password_hash = db.Column(db.String(255))
     is_verified = db.Column(db.Boolean())
-    verification_code = db.Column(db.String(255), nullable=True)
+    verification_code = db.Column(db.String(6), nullable=True)
+    created_at = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
+    updated_at = db.Column(db.DateTime, nullable=False, server_default=db.func.now(), server_onupdate=db.func.now())
     contacts = db.relationship('Contact', backref='user', lazy=True)
 
     def __repr__(self):

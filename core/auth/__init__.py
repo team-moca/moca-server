@@ -7,10 +7,6 @@ from models import User as UserModel
 auth = HTTPTokenAuth(scheme='Bearer')
 secret = "J7rSEi4tVSB2tdRpubRRWQj5C3s5RwCC"
 
-users = {
-    'jkahnwald': '53fab271885be6d753d501940409376b94ca7b7a'
-}
-
 invalidated_jtis = []
 
 class AuthManager:
@@ -19,11 +15,13 @@ class AuthManager:
 
 
     def login(self, username, pw_hash, device_name):
-        if users.get(username) == pw_hash:
+
+        user = db.session.query(UserModel).filter(UserModel.username == username).first()
+
+        # Only allow login if the user is verified
+        if user and user.password_hash == pw_hash and user.is_verified:
+
             self.jti = self.jti + 1
-
-            user = db.session.query(UserModel).filter(UserModel.username == username).first()
-
             return jwt.encode({
                 'username': username,
                 'user_id': user.user_id,
@@ -32,6 +30,9 @@ class AuthManager:
                 'iat': datetime.utcnow(),
                 'jti': self.jti
                 }, secret, algorithm='HS256')
+
+        else:
+            print(f"User {user.username} is not yet verified.")
 
     def refresh(self, token):
         payload = jwt.decode(token, secret, algorithms=['HS256'])

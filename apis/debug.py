@@ -12,7 +12,7 @@ api = Namespace('debug', description="Debugging only methods")
 #     'last_supported_version': fields.String(description="A semantic versioning number representing the last api version clients must have to connect to the server.")
 # })
 
-@api.route('/seed')
+@api.route('/database/seed')
 class SeedResource(Resource):
     @api.doc('seed')
     def post(self):
@@ -77,5 +77,17 @@ class SeedResource(Resource):
         db.session.add(msg3)
 
         db.session.commit()
+
+        return {}
+
+
+@api.route('/database/clear')
+class SeedResource(Resource):
+    @api.doc('clear')
+    def post(self):
+        """Clear the database."""
+
+        db.drop_all()
+        db.create_all()
 
         return {}
