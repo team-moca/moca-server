@@ -80,21 +80,21 @@ class MessageResource(Resource):
 
         return '', 204
 
-@api.route('/<string:chat_id>/messages/<string:message_id>/pin')
-class MessageResource(Resource):
+# @api.route('/<string:chat_id>/messages/<string:message_id>/pin')
+# class MessageResource(Resource):
 
-    @auth.login_required
-    @api.doc(security=["jwt"])
-    @api.doc("pin_message")
-    @api.response(204, 'Message pinned')
-    def post(self, **kwargs):
-        """Pin a message."""
-        return '', 204
+#     @auth.login_required
+#     @api.doc(security=["jwt"])
+#     @api.doc("pin_message")
+#     @api.response(204, 'Message pinned')
+#     def post(self, **kwargs):
+#         """Pin a message."""
+#         return '', 204
 
-    @auth.login_required
-    @api.doc(security=["jwt"])
-    @api.doc("unpin_message")
-    @api.response(204, 'Message unpinned')
-    def delete(self, **kwargs):
-        """Unpin a message."""
-        return '', 204
+#     @auth.login_required
+#     @api.doc(security=["jwt"])
+#     @api.doc("unpin_message")
+#     @api.response(204, 'Message unpinned')
+#     def delete(self, **kwargs):
+#         """Unpin a message."""
+#         return '', 204

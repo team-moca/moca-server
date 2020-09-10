@@ -1,6 +1,8 @@
 from flask_httpauth import HTTPTokenAuth
 import jwt
 from datetime import datetime, timedelta
+from core.extensions import db
+from models import User as UserModel
 
 auth = HTTPTokenAuth(scheme='Bearer')
 secret = "J7rSEi4tVSB2tdRpubRRWQj5C3s5RwCC"
@@ -19,8 +21,12 @@ class AuthManager:
     def login(self, username, pw_hash, device_name):
         if users.get(username) == pw_hash:
             self.jti = self.jti + 1
+
+            user = db.session.query(UserModel).filter(UserModel.username == username).first()
+
             return jwt.encode({
                 'username': username,
+                'user_id': user.user_id,
                 'device_name': device_name,
                 'exp': datetime.utcnow() + timedelta(days=7),
                 'iat': datetime.utcnow(),

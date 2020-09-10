@@ -1,6 +1,11 @@
 from flask_restx import Namespace, Resource, fields
 from core.auth import auth
+from core.extensions import db
+from models import Chat as ChatModel
+from models import Contact as ContactModel
 import enum
+from sqlalchemy.orm import joinedload
+import itertools
 
 api = Namespace('chats', description='Chat operations')
 
@@ -14,6 +19,20 @@ class ChatType(enum.Enum):
     single = 'single'
     multi = 'multi'
     group = 'group'
+
+def getChatType(contacts):
+    if len(contacts) == 2:
+        # exactly two contacts (the user itself and one other)
+        return ChatType.single
+    if len(set([contact.user_id for contact in contacts])) == 1:
+        # exactly two users (which could use multiple services)
+        return ChatType.multi
+
+    # otherwise, it's probably a group
+    return ChatType.group
+
+def getContactsForUser(user_id):
+    return db.session.query(ContactModel).filter(ContactModel.user_id == user_id).all()
 
 chat_model = api.model('Chat', {
     'chat_id': fields.String,
@@ -56,75 +75,114 @@ class ChatsResource(Resource):
     @api.doc("list_chats")
     def get(self, **kwargs):
         """Get a list of all chats the user has."""
-        return [
-            Chat('CHAT0', ChatType.single, "Chat Zero", [Contact("TELEGRAM", "HGTannhaus", "H. G. Tannhaus")]),
-            Chat("CHAT1", ChatType.group, "Chat One (Multi Chat)", [Contact("WHATSAPP", "silja_wa", "Silja"), Contact("TELEGRAM", "silja_tg", "Silja")]),
-            Chat("CHAT2", ChatType.group, "Chat Two (Group Chat)", [Contact("WHATSAPP", "JKahnwald", "Jonas Kahnwald"), Contact("WHATSAPP", "MNielsen", "Martha Nielsen")])
-        ]
 
-@api.route('/<string:id>')
+        user_id = auth.current_user().get("payload", {}).get("user_id")
+        contacts = db.session.query(ContactModel).filter(ContactModel.user_id == user_id).options(joinedload("chats")).all()
+        
+        # early out if user has no associated contacts
+        if len(contacts) == 0:
+            return []
+
+        chats = [chat for contact in contacts for chat in contact.chats]
+        return [Chat(model.chat_id, getChatType(model.contacts), model.name, [Contact(cm.service_id, cm.contact_id, cm.name) for cm in model.contacts]) for model in chats]
+
+@api.route('/<string:chat_id>')
 class ChatResource(Resource):
     @auth.login_required
     @api.doc(security=["jwt"])
     @api.doc('delete_chat')
     @api.response(204, 'Chat deleted')
-    def delete(self, id):
+    def delete(self, chat_id):
         '''Delete a chat and all its messages. Cannot be undone.'''
+
+        db.session.query(ChatModel).filter(ChatModel.chat_id == chat_id).delete()
+        db.session.commit()
+
         return '', 204
 
-@api.route('/<string:id>/mute')
+@api.route('/<string:chat_id>/mute')
 class ChatMuteResource(Resource):
     @auth.login_required
     @api.doc(security=["jwt"])
     @api.doc('mute')
     @api.expect(mute_model)
     @api.response(204, 'Chat muted')
-    def post(self, id):
+    def post(self, chat_id):
         '''Mute a chat.'''
+        chat = db.session.query(ChatModel).filter(ChatModel.chat_id == chat_id, ChatModel.chat_id == chat_id).first()
+        chat.is_muted = True
+
+        db.session.commit()
+
         return '', 204
 
     @auth.login_required
     @api.doc(security=["jwt"])
     @api.doc('unmute')
     @api.response(204, 'Chat unmuted')
-    def delete(self, id):
+    def delete(self, chat_id):
         '''Unmute a chat.'''
+        chat = db.session.query(ChatModel).filter(ChatModel.chat_id == chat_id, ChatModel.chat_id == chat_id).first()
+        chat.is_muted = False
+
+        db.session.commit()
+
         return '', 204
 
-@api.route('/<string:id>/pin')
+@api.route('/<string:chat_id>/pin')
 class ChatPinResource(Resource):
     @auth.login_required
     @api.doc(security=["jwt"])
     @api.doc('pin')
     @api.expect(pin_model)
     @api.response(204, 'Chat pinned')
-    def post(self, id):
+    def post(self, chat_id):
         '''Pin a chat.'''
+        chat = db.session.query(ChatModel).filter(ChatModel.chat_id == chat_id, ChatModel.chat_id == chat_id).first()
+        chat.pin_position = 0
+
+        db.session.commit()
+
         return '', 204
 
     @auth.login_required
     @api.doc(security=["jwt"])
     @api.doc('unpin')
     @api.response(204, 'Chat unpinned')
-    def delete(self, id):
+    def delete(self, chat_id):
         '''Unpin a chat.'''
+        chat = db.session.query(ChatModel).filter(ChatModel.chat_id == chat_id, ChatModel.chat_id == chat_id).first()
+        chat.pin_position = None
+
+        db.session.commit()
+
         return '', 204
 
-@api.route('/<string:id>/archive')
+@api.route('/<string:chat_id>/archive')
 class ChatArchiveResource(Resource):
     @auth.login_required
     @api.doc(security=["jwt"])
     @api.doc('archive')
     @api.expect(archive_model)
     @api.response(204, 'Chat archived')
-    def post(self, id):
+    def post(self, chat_id):
         '''Archive a chat.'''
+        chat = db.session.query(ChatModel).filter(ChatModel.chat_id == chat_id, ChatModel.chat_id == chat_id).first()
+        chat.is_archived = False
+
+        db.session.commit()
+
         return '', 204
 
     @auth.login_required
     @api.doc(security=["jwt"])
     @api.doc('unarchive')
     @api.response(204, 'Chat unarchived')
-    def delete(self, id):
+    def delete(self, chat_id):
         '''Unarchive a chat.'''
+        chat = db.session.query(ChatModel).filter(ChatModel.chat_id == chat_id, ChatModel.chat_id == chat_id).first()
+        chat.is_archived = False
+
+        db.session.commit()
+
         return '', 204
