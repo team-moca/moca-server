@@ -23,7 +23,7 @@ new_user_model = api.model('NewUser',{
 
 verify_model = api.model('Verify',{
     'user_id': fields.Integer(example=42),
-    'verification_code': fields.String(example="b18df2"),
+    'verification_code': fields.String(example="230237"),
 })
 
 token_model = api.model('Token', {

@@ -53,4 +53,13 @@ class Message(db.Model):
         nullable=False)
     chat_id = db.Column(db.Integer, db.ForeignKey('chat.chat_id'),
         nullable=False)
-    message = db.Column(db.String())
+    message = db.Column(db.String()) # JSON
+
+class Connector(db.Model):
+    connector_id = db.Column(db.Integer, primary_key=True)
+    connector_type = db.Column(db.String(255))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.user_id'))
+    configuration = db.Column(db.String()) # JSON
+
+    def __repr__(self):
+        return '<%s-Connector %s>' % (self.connector_type, self.connector_id)
