@@ -39,6 +39,10 @@ token_model = api.model('Token', {
     'error': fields.Nested(error_model)
 })
 
+empty_model = api.model('Empty', {
+    'error': fields.Nested(error_model)
+})
+
 @api.route('/login')
 class AuthLoginResource(Resource):
     @api.doc('login')
@@ -53,7 +57,7 @@ class AuthLoginResource(Resource):
             if token:
                 return {'token': token.decode()}
         except MocaException as e:
-            return {'error': {'code': e.error_code, 'message': getattr(e, 'message', repr(e))}}, 401
+            return {'error': {'code': e.error_code, 'message': getattr(e, 'message', repr(e))}}, e.http_code
 
         return '', 401
 
@@ -61,30 +65,23 @@ class AuthLoginResource(Resource):
 class AuthRegisterResource(Resource):
     @api.doc('register')
     @api.expect(new_user_model)
+    @api.response(201, 'User registered')
     @api.response(409, 'Conflict')
-    @api.marshal_with(token_model)
+    @api.marshal_with(empty_model)
     def post(self):
         """Register a new user account."""
         
         username = api.payload.get("username")
         mail = api.payload.get("mail")
         password = api.payload.get("password")
-        verification_code = "{:06d}".format(random.randint(0, 999999))
 
-        new_user = UserModel(
-            username = username,
-            mail = mail,
-            password_hash = hashlib.sha1((username + password).encode('utf-8')).hexdigest(),
-            is_verified = False,
-            verification_code = verification_code
-        )
+        try:
+            auth_manager.register(username, mail, password)
+            return '', 201
+        except MocaException as e:
+            return {'error': {'code': e.error_code, 'message': getattr(e, 'message', repr(e))}}, e.http_code
 
-        db.session.add(new_user)
-        db.session.commit()
-
-        print(f"Verification code for new user {username}: {verification_code}")
-        
-        return '', 201
+        return '', 500
 
 @api.route('/verify')
 class VerifyResource(Resource):

@@ -9,18 +9,46 @@ class MocaException(Exception):
         """
         raise Exception("Error code is not implemented for this exception.")
 
+    @property
+    def http_code(self):
+        """The HTTP code which should be returned to the client."""
+        return 500
+
 
 class UserNotVerifiedException(MocaException):
     """The user cannot login because its account is not yet verified."""
 
     @property
     def error_code(self):
-        return "A020"
+        return "AL020"
+
+    @property
+    def http_code(self):
+        """The HTTP code which should be returned to the client."""
+        return 401
 
 
 class InvalidAuthException(MocaException):
-    """Username or password wrong."""
+    """Username and/or password wrong."""
 
     @property
     def error_code(self):
-        return "A010"
+        return "AL010"
+
+    @property
+    def http_code(self):
+        """The HTTP code which should be returned to the client."""
+        return 401
+
+
+class UsernameAlreadyTakenException(MocaException):
+    """Username already taken."""
+
+    @property
+    def error_code(self):
+        return "AR010"
+
+    @property
+    def http_code(self):
+        """The HTTP code which should be returned to the client."""
+        return 409
