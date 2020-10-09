@@ -22,7 +22,7 @@ new_user_model = api.model('NewUser',{
 })
 
 verify_model = api.model('Verify',{
-    'user_id': fields.Integer(example=42),
+    'username': fields.String(example="jkahnwald"),
     'verification_code': fields.String(example="230237"),
 })
 
@@ -81,10 +81,10 @@ class VerifyResource(Resource):
     @api.response(401, 'Verification code wrong')
     def post(self):
         '''Verify a newly created user account.'''
-        user_id = api.payload.get("user_id")
+        username = api.payload.get("username")
         verification_code = api.payload.get("verification_code")
 
-        user = db.session.query(UserModel).filter(UserModel.user_id == user_id).first()
+        user = db.session.query(UserModel).filter(UserModel.username == username).first()
         
         verified = verification_code == user.verification_code
 
