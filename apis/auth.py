@@ -1,5 +1,6 @@
 from flask_restx import Namespace, Resource, fields
 from core.auth import auth, AuthManager
+from core.exceptions import InvalidAuthException, UserNotVerifiedException, MocaException
 from models import User as UserModel
 import hashlib
 from core.extensions import db
@@ -26,8 +27,16 @@ verify_model = api.model('Verify',{
     'verification_code': fields.String(example="230237"),
 })
 
+error_model = api.model('Error', {
+    'message': fields.String(description="If an error occurred, this field includes information for the developer. It "
+                                         "should not be used for display on clients nor should it be used to identify "
+                                         "the error. Use the error code for that matter."),
+    'code': fields.String(description="If an error occurred, the code uniquely identifies this type of error.")
+})
+
 token_model = api.model('Token', {
-    'token': fields.String(description="A JWT token that can be used to access restricted resources.")
+    'token': fields.String(description="A JWT token that can be used to access restricted resources."),
+    'error': fields.Nested(error_model)
 })
 
 @api.route('/login')
@@ -38,10 +47,14 @@ class AuthLoginResource(Resource):
     @api.marshal_with(token_model)
     def post(self):
         """Get a JWT."""
-        token = auth_manager.login(api.payload.get('username'), api.payload.get('hash'), api.payload.get('device_name'))
-        if token:
-            return { 'token': token.decode() }
-        
+
+        try:
+            token = auth_manager.login(api.payload.get('username'), api.payload.get('hash'), api.payload.get('device_name'))
+            if token:
+                return {'token': token.decode()}
+        except MocaException as e:
+            return {'error': {'code': e.error_code, 'message': getattr(e, 'message', repr(e))}}, 401
+
         return '', 401
 
 @api.route('/register')

@@ -3,23 +3,27 @@ import jwt
 from datetime import datetime, timedelta
 from core.extensions import db
 from models import User as UserModel
+from core.exceptions import UserNotVerifiedException, InvalidAuthException
 
 auth = HTTPTokenAuth(scheme='Bearer')
 secret = "J7rSEi4tVSB2tdRpubRRWQj5C3s5RwCC"
 
 invalidated_jtis = []
 
+
 class AuthManager:
     def __init__(self):
         self.jti = 0
-
 
     def login(self, username, pw_hash, device_name):
 
         user = db.session.query(UserModel).filter(UserModel.username == username).first()
 
         # Only allow login if the user is verified
-        if user and user.password_hash == pw_hash and user.is_verified:
+        if user and not user.is_verified:
+            raise UserNotVerifiedException(f"User {user.username} is not yet verified.")
+
+        if user and user.password_hash == pw_hash:
 
             self.jti = self.jti + 1
             return jwt.encode({
@@ -31,8 +35,7 @@ class AuthManager:
                 'jti': self.jti
                 }, secret, algorithm='HS256')
 
-        else:
-            print(f"User {user.username} is not yet verified.")
+        raise InvalidAuthException("Username or password wrong.")
 
     def refresh(self, token):
         payload = jwt.decode(token, secret, algorithms=['HS256'])
@@ -47,6 +50,7 @@ class AuthManager:
         })
         return jwt.encode(payload, secret, algorithm='HS256')
 
+
 @auth.verify_token
 def verify_token(token):
     if token:
@@ -59,6 +63,7 @@ def verify_token(token):
                 }
         except jwt.ExpiredSignatureError:
             pass
+
 
 @auth.error_handler
 def authorization_error(status):

@@ -5,17 +5,17 @@ from functools import wraps
 from core.extensions import db
 from dotenv import load_dotenv
 import os
+from apis import api
 
 load_dotenv()
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///moca.db' # os.getenv("DATABASE_URL")
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///moca.db'  # os.getenv("DATABASE_URL")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
 db.init_app(app)
 
-from apis import api
 api.init_app(app)
 
 if __name__ == '__main__':
