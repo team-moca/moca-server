@@ -52,3 +52,16 @@ class UsernameAlreadyTakenException(MocaException):
     def http_code(self):
         """The HTTP code which should be returned to the client."""
         return 409
+
+
+class TimeoutException(MocaException):
+    """Timeout."""
+
+    @property
+    def error_code(self):
+        return "IT010"
+
+    @property
+    def http_code(self):
+        """The HTTP code which should be returned to the client."""
+        return 504

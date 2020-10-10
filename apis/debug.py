@@ -1,7 +1,7 @@
 from flask_restx import Namespace, Resource, fields
 from core.auth import auth
 from core.version_helper import app_version
-from core.extensions import db
+from core.extensions import db, mqtt
 from models import User, Contact, Chat, Message
 import json
 
@@ -107,5 +107,7 @@ class SeedResource(Resource):
 
         db.drop_all()
         db.create_all()
+
+        mqtt.publish("debug/database", json.dumps({"event": "clear"}))
 
         return {}

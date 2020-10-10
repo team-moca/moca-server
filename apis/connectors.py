@@ -1,6 +1,9 @@
+import time
+
 from flask_restx import Namespace, Resource, fields
 from core.auth import auth
-from core.extensions import db, configurator
+from core.exceptions import MocaException
+from core.extensions import db, configurator, mqtt, pool
 from models import Connector as ConnectorModel
 import json
 
@@ -23,7 +26,9 @@ class ConnectorsResource(Resource):
     def post(self, **kwargs):
         """Send a connector to a chat."""
 
-        return {"flow_id": configurator.start_flow()}, 200
+        flow_id = configurator.start_flow()
+
+        return {"flow_id": flow_id}, 200
 
 
 @api.route("/<string:flow_id>")
@@ -36,6 +41,21 @@ class ConnectorsResource(Resource):
     def post(self, flow_id, **kwargs):
         """Submit a step of the current configuration flow."""
 
-        flow = configurator.get_flow(flow_id)
+        mqtt.subscribe(f"telegram/configure/{flow_id}/response")
+        pool.listen(f"telegram/configure/{flow_id}/response")
 
-        return flow.current_step(api.payload), 200
+        mqtt.publish(f"telegram/configure/{flow_id}")
+
+        try:
+            response = pool.get(f"telegram/configure/{flow_id}/response")
+        except MocaException as e:
+            return {
+                       "error": {
+                           "code": e.error_code,
+                           "message": getattr(e, "message", repr(e)),
+                       }
+                   }, e.http_code
+        finally:
+            mqtt.unsubscribe(f"telegram/configure/{flow_id}/response")
+
+        return response, 200
