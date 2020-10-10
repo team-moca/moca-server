@@ -8,25 +8,19 @@ from .debug import api as ns_debug
 from .connectors import api as ns_connectors
 from core.version_helper import app_version
 
-authorizations = {
-    'jwt': {
-        'type': 'apiKey',
-        'in': 'header',
-        'name': 'Authorization'
-    }
-}
+authorizations = {"jwt": {"type": "apiKey", "in": "header", "name": "Authorization"}}
 
 api = Api(
-            title="MOCA Server API",
-            version=app_version,
-            description="REST API reference for mobile and web clients connecting to MOCA Server.",
-            authorizations=authorizations,
-            security=[]
-        )
+    title="MOCA Server API",
+    version=app_version,
+    description="REST API reference for mobile and web clients connecting to MOCA Server.",
+    authorizations=authorizations,
+    security=[],
+)
 
-api.add_namespace(ns_info, path='/info')
-api.add_namespace(ns_debug, path='/debug')
-api.add_namespace(ns_auth, path='/auth')
-api.add_namespace(ns_connectors, path='/connectors')
-api.add_namespace(ns_chats, path='/chats')
-api.add_namespace(ns_messages, path='/chats')
+api.add_namespace(ns_info, path="/info")
+api.add_namespace(ns_debug, path="/debug")
+api.add_namespace(ns_auth, path="/auth")
+api.add_namespace(ns_connectors, path="/connectors")
+api.add_namespace(ns_chats, path="/chats")
+api.add_namespace(ns_messages, path="/chats")

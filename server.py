@@ -11,12 +11,12 @@ load_dotenv()
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///moca.db'  # os.getenv("DATABASE_URL")
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///moca.db"  # os.getenv("DATABASE_URL")
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 
 db.init_app(app)
 
 api.init_app(app)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)

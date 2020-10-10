@@ -1,6 +1,7 @@
 import random
 from connectors.telegram.config_flow import ConfigFlow
 
+
 class Configurator:
     def __init__(self):
         super().__init__()
@@ -8,7 +9,7 @@ class Configurator:
         print("Initializing configurator")
 
     def _generate_flow_id(self):
-        return "{:24x}".format(random.randint(0, 256**12))
+        return "{:24x}".format(random.randint(0, 256 ** 12))
 
     # TODO: supplement connector type in parameter
     def start_flow(self):

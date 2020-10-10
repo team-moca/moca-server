@@ -1,7 +1,7 @@
 import connectors
 
-class ConfigFlow(connectors.ConfigFlow):
 
+class ConfigFlow(connectors.ConfigFlow):
     def __init__(self):
         super().__init__()
         self.current_step = self.step_user
@@ -14,9 +14,7 @@ class ConfigFlow(connectors.ConfigFlow):
         if user_input:
             return self.step_verification_code()
 
-        return {
-            "phone": "string"
-        }
+        return {"phone": "string"}
 
     def step_verification_code(self, user_input=None):
         """The second step is to enter the verification code (sent by Telegram via SMS or phone call)."""
@@ -25,12 +23,7 @@ class ConfigFlow(connectors.ConfigFlow):
         if user_input:
             return self.step_password()
 
-        return {
-            "verification_code": {
-                "type": "string",
-                "len": 6
-            }
-        }
+        return {"verification_code": {"type": "string", "len": 6}}
 
     def step_password(self, user_input=None):
         """Optional third step, if the user activated 2FA with password."""
@@ -39,12 +32,8 @@ class ConfigFlow(connectors.ConfigFlow):
         if user_input:
             return self.step_finished()
 
-        return {
-            "password": "string"
-        }
+        return {"password": "string"}
 
     def step_finished(self, user_input=None):
         self.current_step = self.step_finished
-        return {
-            "finished": True
-        }
+        return {"finished": True}
