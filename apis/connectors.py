@@ -44,7 +44,7 @@ class ConnectorsResource(Resource):
         mqtt.subscribe(f"telegram/configure/{flow_id}/response")
         pool.listen(f"telegram/configure/{flow_id}/response")
 
-        mqtt.publish(f"telegram/configure/{flow_id}")
+        mqtt.publish(f"telegram/configure/{flow_id}", json.dumps(api.payload))
 
         try:
             response = pool.get(f"telegram/configure/{flow_id}/response")
