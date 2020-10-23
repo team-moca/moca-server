@@ -85,6 +85,7 @@ class ConnectorsResource(Resource):
                 new_connector = ConnectorModel(
                     connector_type="TELEGRAM",
                     user_id=user_id,
+                    connector_user_id = contact.get("id"),
                     configuration=""
                 )
                 db.session.add(new_connector)

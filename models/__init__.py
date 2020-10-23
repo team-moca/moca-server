@@ -75,6 +75,7 @@ class Connector(db.Model):
     connector_id = db.Column(db.Integer, primary_key=True)
     connector_type = db.Column(db.String(255))
     user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"))
+    connector_user_id = db.Column(db.String(255))
     configuration = db.Column(db.String())  # JSON
 
     def __repr__(self):
