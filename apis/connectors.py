@@ -5,6 +5,9 @@ from core.auth import auth
 from core.exceptions import MocaException
 from core.extensions import db, configurator, mqtt, pool
 from models import Connector as ConnectorModel
+from models import Contact as ContactModel
+from models import User as UserModel
+
 import json
 
 api = Namespace("connectors", description="Connector operations")
@@ -57,5 +60,38 @@ class ConnectorsResource(Resource):
                    }, e.http_code
         finally:
             mqtt.unsubscribe(f"telegram/configure/{flow_id}/response")
+
+        if response.get("step") == "finished":
+
+            # 1. Get user id
+            user_id = auth.current_user().get("payload", {}).get("user_id")
+
+            # Check if user not already has a connection
+            if db.session.query(ConnectorModel).filter(ConnectorModel.user_id == user_id).count() == 0:
+
+                contact = response.get("data", {}).get("contact")
+
+                # 2. Create contact
+                new_contact = ContactModel(
+                    service_id="TELEGRAM",
+                    name=contact.get("name"),
+                    username=contact.get("username"),
+                    phone=contact.get("phone"),
+                    user_id=user_id
+                )
+                db.session.add(new_contact)
+
+                # 3. Create connector
+                new_connector = ConnectorModel(
+                    connector_type="TELEGRAM",
+                    user_id=user_id,
+                    configuration=""
+                )
+                db.session.add(new_connector)
+
+                db.session.commit()
+
+            else:
+                print("Configuration already exists.")
 
         return response, 200
