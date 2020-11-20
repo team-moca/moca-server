@@ -53,11 +53,11 @@ class ConnectorsResource(Resource):
             response = pool.get(f"telegram/configure/{flow_id}/response")
         except MocaException as e:
             return {
-                       "error": {
-                           "code": e.error_code,
-                           "message": getattr(e, "message", repr(e)),
-                       }
-                   }, e.http_code
+                "error": {
+                    "code": e.error_code,
+                    "message": getattr(e, "message", repr(e)),
+                }
+            }, e.http_code
         finally:
             mqtt.unsubscribe(f"telegram/configure/{flow_id}/response")
 
@@ -67,7 +67,12 @@ class ConnectorsResource(Resource):
             user_id = auth.current_user().get("payload", {}).get("user_id")
 
             # Check if user not already has a connection
-            if db.session.query(ConnectorModel).filter(ConnectorModel.user_id == user_id).count() == 0:
+            if (
+                db.session.query(ConnectorModel)
+                .filter(ConnectorModel.user_id == user_id)
+                .count()
+                == 0
+            ):
 
                 contact = response.get("data", {}).get("contact")
 
@@ -77,7 +82,7 @@ class ConnectorsResource(Resource):
                     name=contact.get("name"),
                     username=contact.get("username"),
                     phone=contact.get("phone"),
-                    user_id=user_id
+                    user_id=user_id,
                 )
                 db.session.add(new_contact)
 
@@ -85,8 +90,8 @@ class ConnectorsResource(Resource):
                 new_connector = ConnectorModel(
                     connector_type="TELEGRAM",
                     user_id=user_id,
-                    connector_user_id = contact.get("id"),
-                    configuration=""
+                    connector_user_id=contact.get("id"),
+                    configuration="",
                 )
                 db.session.add(new_connector)
 

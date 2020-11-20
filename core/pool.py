@@ -4,7 +4,6 @@ from core.exceptions import TimeoutException
 
 
 class Pool:
-
     def __init__(self):
         self.pool = {}
         self.topics = []
@@ -34,5 +33,5 @@ class Pool:
             if elapsed > timeout:
                 raise TimeoutException(f"Timeout while waiting for topic {topic}.")
 
-            time.sleep(.02)
-            elapsed += .02
+            time.sleep(0.02)
+            elapsed += 0.02
