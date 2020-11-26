@@ -90,9 +90,33 @@ class SeedResource(Resource):
             ),
         )
 
+        msg4 = Message(
+            chat_id=new_chat.chat_id,
+            contact_id=contact_mnielsen.contact_id,
+            message=json.dumps(
+                {
+                    "type": "image",
+                    "url": "https://img.posterlounge.de/images/l/1891341.jpg",
+                }
+            ),
+        )
+
+        msg5 = Message(
+            chat_id=new_chat.chat_id,
+            contact_id=contact_mnielsen.contact_id,
+            message=json.dumps(
+                {
+                    "type": "video",
+                    "url": "https://bit.ly/2KAZmtK",
+                }
+            ),
+        )
+
         db.session.add(msg1)
         db.session.add(msg2)
         db.session.add(msg3)
+        db.session.add(msg4)
+        db.session.add(msg5)
 
         db.session.commit()
 
