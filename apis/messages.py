@@ -1,26 +1,12 @@
 from flask_restx import Namespace, Resource, fields
 from core.auth import auth
 from core.extensions import db
-from models import Message as MessageModel
+from models import Message as MessageModel, schemas
 import json
 
 api = Namespace("messages", description="Message operations")
 
-message_model = api.model(
-    "Message",
-    {
-        "message_id": fields.Integer(
-            description="Unique id identifying this message.", example=56183044
-        ),
-        "contact_id": fields.Integer(
-            description="Sender's contact id. If sending a message, this field will be ignored.",
-            example=100,
-        ),
-        "message": fields.Raw(
-            description="A JSON object representing the message. You can get the type by looking at the type property in this json."
-        ),
-    },
-)
+message_model = schemas.get_message_schema(api)
 
 delete_model = api.model(
     "DeleteMessage",
@@ -34,10 +20,11 @@ delete_model = api.model(
 
 
 class Message(object):
-    def __init__(self, message_id, contact_id, message):
+    def __init__(self, message_id, contact_id, message, sent_datetime):
         self.message_id = message_id
         self.contact_id = contact_id
         self.message = message
+        self.sent_datetime = sent_datetime
 
 
 @api.route("/<string:chat_id>/messages")
@@ -53,7 +40,7 @@ class MessagesResource(Resource):
             db.session.query(MessageModel).filter(MessageModel.chat_id == chat_id).all()
         )
         return [
-            Message(model.message_id, model.contact_id, json.loads(model.message))
+            Message(model.message_id, model.contact_id, json.loads(model.message), model.sent_datetime)
             for model in messages
         ]
 

@@ -69,6 +69,10 @@ class Message(db.Model):
     )
     chat_id = db.Column(db.Integer, db.ForeignKey("chat.chat_id"), nullable=False)
     message = db.Column(db.String())  # JSON
+    sent_datetime = db.Column(db.DateTime())
+
+    def __repr__(self):
+        return "<Message %s>" % self.message_id
 
 
 class Connector(db.Model):

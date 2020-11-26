@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask_restx import Namespace, Resource, fields
 from core.auth import auth
 from core.version_helper import app_version
@@ -73,11 +75,13 @@ class SeedResource(Resource):
             message=json.dumps(
                 {"type": "text", "content": "Hallo ihr alle! Ich bins, Jonas"}
             ),
+            sent_datetime=datetime(2020, 11, 11, 9, 2, 30)
         )
         msg2 = Message(
             chat_id=new_chat.chat_id,
             contact_id=contact_jkahnwald.contact_id,
             message=json.dumps({"type": "text", "content": "Naa, was geht?"}),
+            sent_datetime=datetime(2020, 11, 11, 9, 3, 24)
         )
         msg3 = Message(
             chat_id=new_chat.chat_id,
@@ -88,6 +92,7 @@ class SeedResource(Resource):
                     "content": "Was wir wissen, ist ein Tropfen. Was wir nicht wissen, ist ein Ozean.",
                 }
             ),
+            sent_datetime=datetime(2020, 11, 11, 9, 5, 12)
         )
 
         msg4 = Message(
@@ -99,6 +104,7 @@ class SeedResource(Resource):
                     "url": "https://img.posterlounge.de/images/l/1891341.jpg",
                 }
             ),
+            sent_datetime=datetime(2020, 11, 11, 9, 12, 59)
         )
 
         msg5 = Message(
@@ -110,6 +116,7 @@ class SeedResource(Resource):
                     "url": "https://bit.ly/2KAZmtK",
                 }
             ),
+            sent_datetime=datetime(2020, 11, 11, 9, 14, 37)
         )
 
         db.session.add(msg1)
