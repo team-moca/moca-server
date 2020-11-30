@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask_restx import Namespace, Resource, fields
 from core.auth import auth
 from core.extensions import db
@@ -56,6 +58,7 @@ class MessagesResource(Resource):
             chat_id=chat_id,
             contact_id=api.payload.get("contact_id"),
             message=json.dumps(api.payload.get("message")),
+            sent_datetime=datetime.strptime(api.payload.get("sent_datetime"), "%Y-%m-%dT%H:%M:%S"),
         )
         db.session.add(new_message)
         db.session.commit()
