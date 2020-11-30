@@ -5,7 +5,12 @@ class MocaException(Exception):
     def error_code(self):
         """Returns an error code to identify this type of error.
         Error code groups:
-        A___ - Authentication
+
+        A____ - Authentication
+        AR___   - Registration
+        AL___   - Login
+
+        GX___ - Generic exceptions (mostly http exceptions)
         """
         raise Exception("Error code is not implemented for this exception.")
 
@@ -65,3 +70,16 @@ class TimeoutException(MocaException):
     def http_code(self):
         """The HTTP code which should be returned to the client."""
         return 504
+
+
+class NotFoundException(MocaException):
+    """Generic not found."""
+
+    @property
+    def error_code(self):
+        return "GX404"
+
+    @property
+    def http_code(self):
+        """The HTTP code which should be returned to the client."""
+        return 404

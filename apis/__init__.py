@@ -5,6 +5,7 @@ from .chats import api as ns_chats
 from .messages import api as ns_messages
 from .info import api as ns_info
 from .debug import api as ns_debug
+from .contacts import api as ns_contacts
 from .connectors import api as ns_connectors
 from core.version_helper import app_version
 
@@ -24,3 +25,4 @@ api.add_namespace(ns_auth, path="/auth")
 api.add_namespace(ns_connectors, path="/connectors")
 api.add_namespace(ns_chats, path="/chats")
 api.add_namespace(ns_messages, path="/chats")
+api.add_namespace(ns_contacts, path="/contacts")

@@ -36,6 +36,7 @@ class Contact(db.Model):
     name = db.Column(db.String(255))
     username = db.Column(db.String(255))
     phone = db.Column(db.String(255), nullable=True)
+    avatar = db.Column(db.String(255))
     user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), nullable=True)
     chats = db.relationship(
         "Chat",

@@ -1,4 +1,6 @@
 from flask_restx import Namespace, Resource, fields
+from werkzeug.exceptions import Unauthorized
+
 from core.auth import auth, AuthManager
 from core.exceptions import (
     InvalidAuthException,
@@ -46,31 +48,16 @@ verify_model = api.model(
     },
 )
 
-error_model = api.model(
-    "Error",
-    {
-        "message": fields.String(
-            description="If an error occurred, this field includes information for the developer. It "
-            "should not be used for display on clients nor should it be used to identify "
-            "the error. Use the error code for that matter."
-        ),
-        "code": fields.String(
-            description="If an error occurred, the code uniquely identifies this type of error."
-        ),
-    },
-)
-
 token_model = api.model(
     "Token",
     {
         "token": fields.String(
             description="A JWT token that can be used to access restricted resources."
-        ),
-        "error": fields.Nested(error_model),
+        )
     },
 )
 
-empty_model = api.model("Empty", {"error": fields.Nested(error_model)})
+empty_model = api.model("Empty", {})
 
 
 @api.route("/login")
@@ -90,13 +77,10 @@ class AuthLoginResource(Resource):
             )
             if token:
                 return {"token": token.decode()}
-        except MocaException as e:
-            return {
-                "error": {
-                    "code": e.error_code,
-                    "message": getattr(e, "message", repr(e)),
-                }
-            }, e.http_code
+        except InvalidAuthException:
+            e = Unauthorized("Username or password wrong.")
+            e.data = {"code": "INVALID_AUTH"}
+            raise e
 
         return "", 401
 

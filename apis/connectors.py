@@ -1,8 +1,10 @@
 import time
 
 from flask_restx import Namespace, Resource, fields
+from werkzeug.exceptions import GatewayTimeout
+
 from core.auth import auth
-from core.exceptions import MocaException
+from core.exceptions import MocaException, TimeoutException
 from core.extensions import db, configurator, mqtt, pool
 from models import Connector as ConnectorModel
 from models import Contact as ContactModel
@@ -51,13 +53,10 @@ class ConnectorsResource(Resource):
 
         try:
             response = pool.get(f"telegram/configure/{flow_id}/response")
-        except MocaException as e:
-            return {
-                "error": {
-                    "code": e.error_code,
-                    "message": getattr(e, "message", repr(e)),
-                }
-            }, e.http_code
+        except TimeoutException as e:
+            e = GatewayTimeout()
+            e.data = {"code": "GATEWAY_TIMEOUT"}
+            raise e
         finally:
             mqtt.unsubscribe(f"telegram/configure/{flow_id}/response")
 

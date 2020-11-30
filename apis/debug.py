@@ -41,6 +41,7 @@ class SeedResource(Resource):
             name="Jonas Kahnwald",
             username="jkahnwald",
             phone="+49314159265",
+            avatar="https://i.pravatar.cc/150?u=2",
             user_id=1,
         )
         db.session.add(contact_jkahnwald)
@@ -50,6 +51,8 @@ class SeedResource(Resource):
             name="Martha Nielsen",
             username="mnielsen",
             phone="+492718281828",
+            avatar="https://i.pravatar.cc/150?u=4",
+            user_id=1
         )
         db.session.add(contact_mnielsen)
 

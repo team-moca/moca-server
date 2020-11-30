@@ -2,16 +2,23 @@ import enum
 
 from flask_restx import fields
 
+
 class ChatType(enum.Enum):
     single = "single"
     multi = "multi"
     group = "group"
 
-
 def get_contact_schema(api):
     return api.model(
         "Contact",
-        {"service_id": fields.String, "contact_id": fields.String, "name": fields.String},
+        {
+            "contact_id": fields.String,
+            "service_id": fields.String,
+            "username": fields.String,
+            "phone": fields.String,
+            "name": fields.String,
+            "avatar": fields.String,
+        },
     )
 
 
@@ -28,9 +35,10 @@ def get_chat_schema(api):
                 enum=ChatType._member_names_,
             ),
             "contacts": fields.List(fields.Nested(get_contact_schema(api))),
-            "last_message": fields.Nested(get_message_schema(api))
+            "last_message": fields.Nested(get_message_schema(api)),
         },
     )
+
 
 def get_message_schema(api):
     return api.model(
@@ -48,7 +56,7 @@ def get_message_schema(api):
             ),
             "sent_datetime": fields.DateTime(
                 description="Datetime this message was sent by the sender.",
-                example="2020-11-11T09:02:30"
-            )
+                example="2020-11-11T09:02:30",
+            ),
         },
     )
