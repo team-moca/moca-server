@@ -1,5 +1,6 @@
 import json
 
+from sqlalchemy import desc
 from flask_restx import Namespace, Resource, fields
 from core.auth import auth
 from core.extensions import db
@@ -111,7 +112,7 @@ class ChatsResource(Resource):
         if len(contacts) == 0:
             return []
 
-        chats = [chat for contact in contacts for chat in contact.chats]
+        chats = set([chat for contact in contacts for chat in contact.chats])
         return [
             Chat(
                 model.chat_id,
@@ -129,7 +130,7 @@ class ChatsResource(Resource):
 
 def get_last_message(chat_id):
     model = (
-        db.session.query(MessageModel).filter(MessageModel.chat_id == chat_id).order_by(-MessageModel.sent_datetime).first()
+        db.session.query(MessageModel).filter(MessageModel.chat_id == chat_id).order_by(desc(MessageModel.sent_datetime)).first()
     )
     return Message(model.message_id, model.contact_id, json.loads(model.message), model.sent_datetime)
 
