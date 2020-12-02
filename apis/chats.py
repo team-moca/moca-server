@@ -73,13 +73,14 @@ archive_model = api.model(
 
 
 class Contact(object):
-    def __init__(self, service_id, contact_id, name, username, phone, avatar):
+    def __init__(self, service_id, contact_id, name, username, phone, avatar, is_moca_user):
         self.service_id = service_id
         self.contact_id = contact_id
         self.name = name
         self.username = username
         self.phone = phone
         self.avatar = avatar
+        self.is_moca_user = is_moca_user
 
 
 class Chat(object):
@@ -119,7 +120,7 @@ class ChatsResource(Resource):
                 getChatType(model.contacts),
                 model.name,
                 [
-                    Contact(cm.service_id, cm.contact_id, cm.name, cm.username, cm.phone, cm.avatar)
+                    Contact(cm.service_id, cm.contact_id, cm.name, cm.username, cm.phone, cm.avatar, cm.is_moca_user)
                     for cm in model.contacts
                 ],
                 get_last_message(model.chat_id)

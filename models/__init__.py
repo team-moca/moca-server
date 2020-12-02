@@ -38,6 +38,7 @@ class Contact(db.Model):
     phone = db.Column(db.String(255), nullable=True)
     avatar = db.Column(db.String(255))
     user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), nullable=True)
+    is_moca_user = db.Column(db.Boolean, nullable=False, default=False)
     chats = db.relationship(
         "Chat",
         secondary=contacts_chats_relationship,

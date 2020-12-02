@@ -43,6 +43,7 @@ class SeedResource(Resource):
             phone="+49314159265",
             avatar="https://i.pravatar.cc/150?u=2",
             user_id=1,
+            is_moca_user=True
         )
         db.session.add(contact_jkahnwald)
 

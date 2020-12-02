@@ -18,6 +18,7 @@ def get_contact_schema(api):
             "phone": fields.String,
             "name": fields.String,
             "avatar": fields.String,
+            "is_moca_user": fields.Boolean
         },
     )
 
