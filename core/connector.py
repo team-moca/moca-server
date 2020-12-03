@@ -118,3 +118,56 @@ def get_contact(user_id: int, phone: str, contact_id: int):
             raise e
         finally:
             mqtt.unsubscribe(f"telegram/users/{phone}/get_chats/response")
+
+
+def get_messages(user_id: int, chat_id: int):
+
+    contacts = (
+        db.session.query(ContactModel)
+            .filter(ContactModel.user_id == user_id, ContactModel.is_moca_user)
+            .all()
+    )
+
+    print(contacts)
+
+    # Ask service (via service_id) for chats
+
+    for contact in contacts:
+        if contact.service_id == "DEMO":
+            continue
+
+        phone = contact.phone.replace("+", "00")
+
+        mqtt.subscribe(f"telegram/users/{phone}/get_messages/{chat_id}/response")
+        pool.listen(f"telegram/users/{phone}/get_messages/{chat_id}/response")
+
+        mqtt.publish(f"telegram/users/{phone}/get_messages/{chat_id}", "")
+
+        try:
+            response = pool.get(f"telegram/users/{phone}/get_messages/{chat_id}/response")
+
+            # Save new chats in database
+
+            for message in response:
+
+                # Get contact of the sender, else ask for it
+                contact_id = message.get("contact_id")
+
+                get_contact(user_id, phone, contact_id)
+
+                new_last_message = Message(
+                    message_id=message.get("message_id"),
+                    contact_id=contact_id,
+                    chat_id=chat_id,
+                    message=json.dumps(message.get("message")),
+                    sent_datetime=datetime.fromisoformat(message.get("sent_datetime"))
+                )
+
+                db.session.merge(new_last_message)
+
+        except TimeoutException as e:
+            e = GatewayTimeout()
+            e.data = {"code": "GATEWAY_TIMEOUT"}
+            raise e
+        finally:
+            mqtt.unsubscribe(f"telegram/users/{phone}/get_messages/{chat_id}/response")

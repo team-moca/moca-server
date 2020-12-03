@@ -1,6 +1,8 @@
 from datetime import datetime
 
 from flask_restx import Namespace, Resource, fields
+
+from core import connector
 from core.auth import auth
 from core.extensions import db
 from models import Message as MessageModel, schemas
@@ -37,6 +39,9 @@ class MessagesResource(Resource):
     @api.doc("list_messages")
     def get(self, chat_id, **kwargs):
         """List messages of a chat."""
+        user_id = auth.current_user().get("payload", {}).get("user_id")
+
+        connector.get_messages(user_id, chat_id)
 
         messages = (
             db.session.query(MessageModel).filter(MessageModel.chat_id == chat_id).all()
