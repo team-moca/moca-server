@@ -7,6 +7,7 @@ class ChatType(enum.Enum):
     single = "single"
     multi = "multi"
     group = "group"
+    unknown = "unknown"
 
 def get_contact_schema(api):
     return api.model(

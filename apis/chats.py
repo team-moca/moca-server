@@ -4,9 +4,11 @@ from sqlalchemy import desc
 from flask_restx import Namespace, Resource, fields
 from core.auth import auth
 from core.extensions import db
+from core import connector
 from models import Chat as ChatModel
 from apis.messages import Message
 from models import Contact as ContactModel
+from models import Chat as ChatModel
 from models import Message as MessageModel
 import enum
 from sqlalchemy.orm import joinedload
@@ -102,27 +104,19 @@ class ChatsResource(Resource):
         """Get a list of all chats the user has."""
 
         user_id = auth.current_user().get("payload", {}).get("user_id")
-        contacts = (
-            db.session.query(ContactModel)
-            .filter(ContactModel.user_id == user_id)
-            .options(joinedload("chats"))
+
+        chats = (
+            db.session.query(ChatModel)
+            .filter(ChatModel.user_id == user_id)
             .all()
         )
 
-        # early out if user has no associated contacts
-        if len(contacts) == 0:
-            return []
-
-        chats = set([chat for contact in contacts for chat in contact.chats])
         return [
             Chat(
                 model.chat_id,
-                getChatType(model.contacts),
+                ChatType.unknown,
                 model.name,
-                [
-                    Contact(cm.service_id, cm.contact_id, cm.name, cm.username, cm.phone, cm.avatar, cm.is_moca_user)
-                    for cm in model.contacts
-                ],
+                None,
                 get_last_message(model.chat_id)
             )
             for model in chats
@@ -133,7 +127,7 @@ def get_last_message(chat_id):
     model = (
         db.session.query(MessageModel).filter(MessageModel.chat_id == chat_id).order_by(desc(MessageModel.sent_datetime)).first()
     )
-    return Message(model.message_id, model.contact_id, json.loads(model.message), model.sent_datetime)
+    return Message(model.message_id, model.contact_id, json.loads(model.message), model.sent_datetime) if model else None
 
 
 

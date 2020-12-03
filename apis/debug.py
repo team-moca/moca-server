@@ -62,6 +62,7 @@ class SeedResource(Resource):
         # Create Chats
 
         new_chat = Chat(
+            user_id=1,
             name="Windener Jugend",
             is_muted=False,
             is_archived=False,

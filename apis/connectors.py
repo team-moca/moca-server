@@ -3,6 +3,7 @@ import time
 from flask_restx import Namespace, Resource, fields
 from werkzeug.exceptions import GatewayTimeout
 
+from core import connector
 from core.auth import auth
 from core.exceptions import MocaException, TimeoutException
 from core.extensions import db, configurator, mqtt, pool
@@ -82,6 +83,7 @@ class ConnectorsResource(Resource):
                     username=contact.get("username"),
                     phone=contact.get("phone"),
                     user_id=user_id,
+                    is_moca_user=True
                 )
                 db.session.add(new_contact)
 
@@ -98,5 +100,8 @@ class ConnectorsResource(Resource):
 
             else:
                 print("Configuration already exists.")
+
+            # Get chats for the current user
+            connector.get_chats(int(user_id))
 
         return response, 200

@@ -52,6 +52,7 @@ class Contact(db.Model):
 
 
 class Chat(db.Model):
+    user_id = db.Column(db.Integer, db.ForeignKey("user.user_id"), nullable=False)
     chat_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255))
     # chat_type = db.Column(db.String(255))
