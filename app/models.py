@@ -20,7 +20,7 @@ class User(Base):
     user_id = Column(Integer, primary_key=True)
     username = Column(String(255), unique=True)
     mail = Column(String(255))
-    password_hash = Column(String(255))
+    hashed_password = Column(String(255))
     is_verified = Column(Boolean())
     verification_code = Column(String(6), nullable=True)
     created_at = Column(DateTime, nullable=False, server_default=func.now())

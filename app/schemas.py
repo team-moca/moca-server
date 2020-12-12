@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 from pydantic import BaseModel
 from pydantic.fields import Field
 
@@ -15,7 +16,6 @@ class User(BaseModel):
 
 class UserResponse(User):
     user_id: int
-    is_verified: bool
     created_at: datetime
     updated_at: datetime
 
@@ -33,3 +33,21 @@ class VerifyRequest(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+class Chat(BaseModel):
+    user_id: int
+    name: str
+    is_muted: bool
+    is_archived: bool
+    pin_position: Optional[int]
+
+    # last message
+
+    class Config:
+        orm_mode = True
+
+class ChatResponse(Chat):
+    chat_id: int
+
+class Pin(BaseModel):
+    pin_position: int

@@ -2,7 +2,7 @@ from app.database import Base
 import json
 from datetime import datetime
 from app.models import Chat, Contact, Message, User
-from app.dependencies import get_db
+from app.dependencies import get_db, get_hashed_password
 from fastapi import APIRouter
 from fastapi import Depends
 from setuptools_scm import get_version
@@ -36,7 +36,7 @@ async def seed(db: Session = Depends(get_db)):
     new_user = User(
         username="jkahnwald",
         mail="jkahnwald@stadt-winden.de",
-        password_hash="53fab271885be6d753d501940409376b94ca7b7a",
+        hashed_password=get_hashed_password("jkahnwald"),
         is_verified=True,
     )
     db.add(new_user)
