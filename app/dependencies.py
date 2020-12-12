@@ -1,3 +1,6 @@
+from app.pool import Pool
+from fastapi_mqtt.config import MQQTConfig
+from fastapi_mqtt.fastmqtt import FastMQTT
 from app import crud
 from sqlalchemy.orm.session import Session
 from app.database import SessionLocal
@@ -9,6 +12,7 @@ from fastapi.security import OAuth2PasswordBearer
 from fastapi import HTTPException, status
 from passlib.context import CryptContext
 from jose import JWTError, jwt
+import json
 
 # WARNING! This is a dev key only. DO NOT use this in production.
 SECRET_KEY = "f61e42feaed37bec38837b107c4ee1b02c2c0493b240dc5f66865aa1596976f6"
@@ -18,6 +22,22 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
+
+mqtt_config = MQQTConfig()
+mqtt = FastMQTT(
+    config=mqtt_config
+)
+
+pool = Pool(mqtt)
+
+@mqtt.on_message()
+async def message(client, topic, payload, qos, properties):
+    print("Received message: ",topic, payload.decode(), qos, properties)
+    pool.handle(topic, json.loads(payload.decode()))
+
+
+def get_pool():
+    return pool
 
 def get_db():
     db = SessionLocal()

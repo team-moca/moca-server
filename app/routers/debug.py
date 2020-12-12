@@ -47,6 +47,7 @@ async def seed(db: Session = Depends(get_db)):
         connector_user_id="1"
     )
     db.add(new_connector)
+    db.commit()
 
     # Create Contacts
 
@@ -56,7 +57,7 @@ async def seed(db: Session = Depends(get_db)):
         username="jkahnwald",
         phone="+49314159265",
         avatar="https://i.pravatar.cc/150?u=2",
-        user_id=1,
+        connector_id=new_connector.connector_id,
         is_self=True,
     )
     db.add(contact_jkahnwald)
@@ -67,7 +68,7 @@ async def seed(db: Session = Depends(get_db)):
         username="mnielsen",
         phone="+492718281828",
         avatar="https://i.pravatar.cc/150?u=4",
-        user_id=1,
+        connector_id=new_connector.connector_id,
     )
     db.add(contact_mnielsen)
 

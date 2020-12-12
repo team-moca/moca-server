@@ -110,3 +110,6 @@ class Connector(BaseModel):
 
 class ConnectorResponse(Connector):
     connector_id: int
+
+class InitializeConnectorRequest(BaseModel):
+    connector_type: str

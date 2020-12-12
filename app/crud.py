@@ -110,3 +110,14 @@ def get_last_message(db: Session, user_id: int, chat_id: int):
         if model
         else None
     )
+
+def get_connector(db: Session, user_id: int, connector_id: int) -> models.Connector:
+    connector = db.query(models.Connector).filter(models.Connector.user_id == user_id, models.Connector.connector_id == connector_id).first()
+
+    if not connector:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Connector {connector_id} not found.",
+        )
+
+    return connector

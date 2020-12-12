@@ -28,7 +28,6 @@ class User(Base):
         server_default=func.now(),
         server_onupdate=func.now(),
     )
-    contacts = relationship("Contact", backref="users", lazy=True)
 
     def __repr__(self):
         return "<User %s>" % self.username
@@ -43,7 +42,7 @@ class Contact(Base):
     username = Column(String(255))
     phone = Column(String(255), nullable=True)
     avatar = Column(String(255))
-    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=True)
+    connector_id = Column(Integer, ForeignKey("connectors.connector_id"), nullable=True)
     is_self = Column(Boolean, nullable=False, default=False)
     chats = relationship(
         "Chat",
@@ -95,6 +94,7 @@ class Connector(Base):
     connector_user_id = Column(String(255))
     configuration = Column(String())  # JSON
     is_finished = Column(Boolean(), nullable=False, default=False)
+    contacts = relationship("Contact", backref="connectors", lazy=True)
 
     def __repr__(self):
         return "<%s-Connector %s>" % (self.connector_type, self.connector_id)
