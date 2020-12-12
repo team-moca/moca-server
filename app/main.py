@@ -11,7 +11,7 @@ _LOGGER = logging.getLogger(__name__)
 app = FastAPI(
     title="MOCA Server",
     description="API documentation for the MOCA mobile chat aggregator project.",
-    version=get_version()
+    version=get_version(),
 )
 
 app.include_router(info.router)
@@ -20,8 +20,9 @@ app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(chats.router)
 
+
 @app.get("/")
 async def redirect_to_docs():
     _LOGGER.info("The documentation has moved to /docs. Please use this url.")
-    response = RedirectResponse(url='/docs')
+    response = RedirectResponse(url="/docs")
     return response

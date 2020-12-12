@@ -9,10 +9,8 @@ from setuptools_scm import get_version
 from sqlalchemy.orm import Session
 from app.schemas import Info
 
-router = APIRouter(
-    prefix="/debug",
-    tags=["debug"]
-)
+router = APIRouter(prefix="/debug", tags=["debug"])
+
 
 @router.post("/clear")
 async def clear(db: Session = Depends(get_db)):
@@ -23,10 +21,10 @@ async def clear(db: Session = Depends(get_db)):
 
     return {}
 
+
 @router.post("/seed")
 async def seed(db: Session = Depends(get_db)):
     """Clears the database and fills it with demo data."""
-
 
     Base.metadata.drop_all()
     Base.metadata.create_all()
@@ -50,7 +48,7 @@ async def seed(db: Session = Depends(get_db)):
         phone="+49314159265",
         avatar="https://i.pravatar.cc/150?u=2",
         user_id=1,
-        is_moca_user=True
+        is_moca_user=True,
     )
     db.add(contact_jkahnwald)
 
@@ -60,7 +58,7 @@ async def seed(db: Session = Depends(get_db)):
         username="mnielsen",
         phone="+492718281828",
         avatar="https://i.pravatar.cc/150?u=4",
-        user_id=1
+        user_id=1,
     )
     db.add(contact_mnielsen)
 
@@ -87,13 +85,13 @@ async def seed(db: Session = Depends(get_db)):
         message=json.dumps(
             {"type": "text", "content": "Hallo ihr alle! Ich bins, Jonas"}
         ),
-        sent_datetime=datetime(2020, 11, 11, 9, 2, 30)
+        sent_datetime=datetime(2020, 11, 11, 9, 2, 30),
     )
     msg2 = Message(
         chat_id=new_chat.chat_id,
         contact_id=contact_jkahnwald.contact_id,
         message=json.dumps({"type": "text", "content": "Naa, was geht?"}),
-        sent_datetime=datetime(2020, 11, 11, 9, 3, 24)
+        sent_datetime=datetime(2020, 11, 11, 9, 3, 24),
     )
     msg3 = Message(
         chat_id=new_chat.chat_id,
@@ -104,7 +102,7 @@ async def seed(db: Session = Depends(get_db)):
                 "content": "Was wir wissen, ist ein Tropfen. Was wir nicht wissen, ist ein Ozean.",
             }
         ),
-        sent_datetime=datetime(2020, 11, 11, 9, 5, 12)
+        sent_datetime=datetime(2020, 11, 11, 9, 5, 12),
     )
 
     msg4 = Message(
@@ -116,7 +114,7 @@ async def seed(db: Session = Depends(get_db)):
                 "url": "https://img.posterlounge.de/images/l/1891341.jpg",
             }
         ),
-        sent_datetime=datetime(2020, 11, 11, 9, 12, 59)
+        sent_datetime=datetime(2020, 11, 11, 9, 12, 59),
     )
 
     msg5 = Message(
@@ -128,7 +126,7 @@ async def seed(db: Session = Depends(get_db)):
                 "url": "https://bit.ly/2KAZmtK",
             }
         ),
-        sent_datetime=datetime(2020, 11, 11, 9, 14, 37)
+        sent_datetime=datetime(2020, 11, 11, 9, 14, 37),
     )
 
     db.add(msg1)

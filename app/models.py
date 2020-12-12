@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Table, ForeignKey, Integer, String, Boolean, DateTime
-from sqlalchemy.orm  import relationship, backref
+from sqlalchemy.orm import relationship, backref
 from .database import Base
 from sqlalchemy.sql import func
 
@@ -7,9 +7,7 @@ from sqlalchemy.sql import func
 contacts_chats_relationship = Table(
     "contacts_chats_relationship",
     Base.metadata,
-    Column(
-        "contact_id", Integer, ForeignKey("contacts.contact_id"), primary_key=True
-    ),
+    Column("contact_id", Integer, ForeignKey("contacts.contact_id"), primary_key=True),
     Column("chat_id", Integer, ForeignKey("chats.chat_id"), primary_key=True),
 )
 
@@ -77,11 +75,9 @@ class Chat(Base):
 
 class Message(Base):
     __tablename__ = "messages"
-    
+
     message_id = Column(Integer, primary_key=True)
-    contact_id = Column(
-        Integer, ForeignKey("contacts.contact_id"), nullable=False
-    )
+    contact_id = Column(Integer, ForeignKey("contacts.contact_id"), nullable=False)
     chat_id = Column(Integer, ForeignKey("chats.chat_id"), nullable=False)
     message = Column(String())  # JSON
     sent_datetime = Column(DateTime())
@@ -92,7 +88,7 @@ class Message(Base):
 
 class Connector(Base):
     __tablename__ = "connectors"
-    
+
     connector_id = Column(Integer, primary_key=True)
     connector_type = Column(String(255))
     user_id = Column(Integer, ForeignKey("users.user_id"))

@@ -7,10 +7,7 @@ from fastapi.param_functions import Depends
 from app.schemas import RegisterRequest, User, UserResponse, VerifyRequest
 from fastapi import APIRouter, status
 
-router = APIRouter(
-    prefix="/users",
-    tags=["users"]
-)
+router = APIRouter(prefix="/users", tags=["users"])
 
 
 @router.get("/me", response_model=UserResponse)

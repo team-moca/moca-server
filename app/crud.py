@@ -10,14 +10,18 @@ import logging
 
 _LOGGER = logging.getLogger(__name__)
 
+
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.user_id == user_id).first()
+
 
 def get_user_by_username(db: Session, username: str):
     return db.query(models.User).filter(models.User.username == username).first()
 
+
 def get_users(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.User).offset(skip).limit(limit).all()
+
 
 def create_user(db: Session, user: schemas.RegisterRequest):
     hashed_password = get_hashed_password(user.password)
@@ -27,18 +31,19 @@ def create_user(db: Session, user: schemas.RegisterRequest):
     print(f"Verification code for user {user.username}: {verification_code}")
 
     db_user = models.User(
-        username = user.username,
-        mail = user.mail,
-        hashed_password = hashed_password,
-        is_verified = False,
-        verification_code = verification_code,
-        created_at = datetime.now()
+        username=user.username,
+        mail=user.mail,
+        hashed_password=hashed_password,
+        is_verified=False,
+        verification_code=verification_code,
+        created_at=datetime.now(),
     )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
 
     return db_user
+
 
 def verify_user(db: Session, request: schemas.VerifyRequest):
     user = get_user_by_username(db, request.username)
@@ -51,8 +56,7 @@ def verify_user(db: Session, request: schemas.VerifyRequest):
 
     if not user.verification_code == request.verification_code:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Verification code wrong."
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Verification code wrong."
         )
 
     user.is_verified = True
@@ -60,8 +64,14 @@ def verify_user(db: Session, request: schemas.VerifyRequest):
 
     return user
 
+
 def get_chats_for_user(db: Session, user_id: int) -> List[models.Chat]:
     return db.query(models.Chat).filter(models.Chat.user_id == user_id).all()
 
+
 def get_chat(db: Session, user_id: int, chat_id: int) -> models.Chat:
-    return db.query(models.Chat).filter(models.Chat.user_id == user_id, models.Chat.chat_id == chat_id).first()
+    return (
+        db.query(models.Chat)
+        .filter(models.Chat.user_id == user_id, models.Chat.chat_id == chat_id)
+        .first()
+    )
