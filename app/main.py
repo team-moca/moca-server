@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.params import Depends
 from setuptools_scm import get_version
 from starlette.responses import RedirectResponse
-from app.routers import auth, users, info
+from app.routers import auth, debug, users, info
 from app.dependencies import oauth2_scheme
 import logging
 
@@ -17,6 +17,7 @@ app = FastAPI(
 app.include_router(users.router)
 app.include_router(info.router)
 app.include_router(auth.router)
+app.include_router(debug.router)
 
 @app.get("/")
 async def redirect_to_docs():

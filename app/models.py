@@ -1,8 +1,7 @@
 from sqlalchemy import Column, Table, ForeignKey, Integer, String, Boolean, DateTime
 from sqlalchemy.orm  import relationship, backref
-from sqlalchemy.sql.expression import func
 from .database import Base
-
+from sqlalchemy.sql import func
 
 # many to many relationship
 contacts_chats_relationship = Table(
