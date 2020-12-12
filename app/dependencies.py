@@ -1,3 +1,4 @@
+from app.database import SessionLocal
 from datetime import datetime, timedelta
 from typing import Optional
 from app.schemas import AuthUser
@@ -71,3 +72,10 @@ async def get_current_verified_user(current_user: AuthUser = Depends(get_current
     if not current_user.is_verified:
         raise HTTPException(status_code=400, detail="User not verified.")
     return current_user
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

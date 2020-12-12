@@ -7,9 +7,14 @@ class Info(BaseModel):
     last_supported_version: str
 
 class User(BaseModel):
-    user_id: int
     username: str
     mail: str
+
+    class Config:
+        orm_mode = True
+
+class UserResponse(User):
+    user_id: int
     is_verified: bool
     created_at: datetime
     updated_at: datetime
@@ -19,6 +24,7 @@ class AuthUser(User):
 
 class RegisterRequest(User):
     password: str
+
 
 class VerifyRequest(BaseModel):
     username: str
