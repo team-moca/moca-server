@@ -5,7 +5,7 @@ from pydantic.fields import Field
 
 
 class Info(BaseModel):
-    version: str
+    current_version: str
     last_supported_version: str
 
 

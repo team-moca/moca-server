@@ -50,7 +50,7 @@ async def refresh(user: UserResponse = Depends(get_current_verified_user)):
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.post("/", response_model=UserResponse)
+@router.post("/register", response_model=UserResponse)
 async def register_user(
     register_request: RegisterRequest, db: Session = Depends(get_db)
 ):
