@@ -1,13 +1,13 @@
 from app.database import Base
 import json
 from datetime import datetime
-from app.models import Chat, Contact, Message, User
+from app.models import Chat, Contact, Message, User, Connector
 from app.dependencies import get_db, get_hashed_password
 from fastapi import APIRouter
 from fastapi import Depends
 from setuptools_scm import get_version
 from sqlalchemy.orm import Session
-from app.schemas import Info
+
 
 router = APIRouter(prefix="/debug", tags=["debug"])
 
@@ -38,6 +38,15 @@ async def seed(db: Session = Depends(get_db)):
         is_verified=True,
     )
     db.add(new_user)
+
+    # Create Demo connector
+
+    new_connector = Connector(
+        connector_type="DEMO",
+        user_id=1,
+        connector_user_id="1"
+    )
+    db.add(new_connector)
 
     # Create Contacts
 

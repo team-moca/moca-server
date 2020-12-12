@@ -98,3 +98,15 @@ class Contact(BaseModel):
 
 class ContactResponse(Contact):
     contact_id: int
+
+
+class Connector(BaseModel):
+
+    connector_type: str
+    configuration: Optional[str]
+
+    class Config:
+        orm_mode = True
+
+class ConnectorResponse(Connector):
+    connector_id: int

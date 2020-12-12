@@ -94,6 +94,7 @@ class Connector(Base):
     user_id = Column(Integer, ForeignKey("users.user_id"))
     connector_user_id = Column(String(255))
     configuration = Column(String())  # JSON
+    is_finished = Column(Boolean(), nullable=False, default=False)
 
     def __repr__(self):
         return "<%s-Connector %s>" % (self.connector_type, self.connector_id)

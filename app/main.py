@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.params import Depends
 from setuptools_scm import get_version
 from starlette.responses import RedirectResponse
-from app.routers import auth, chats, contacts, debug, messages, users, info
+from app.routers import auth, chats, connectors, contacts, debug, messages, users, info
 from app.dependencies import oauth2_scheme
 import logging
 
@@ -21,6 +21,7 @@ app.include_router(users.router)
 app.include_router(contacts.router)
 app.include_router(chats.router)
 app.include_router(messages.router)
+app.include_router(connectors.router)
 
 
 @app.get("/")
