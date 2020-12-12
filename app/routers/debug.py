@@ -48,7 +48,7 @@ async def seed(db: Session = Depends(get_db)):
         phone="+49314159265",
         avatar="https://i.pravatar.cc/150?u=2",
         user_id=1,
-        is_moca_user=True,
+        is_self=True,
     )
     db.add(contact_jkahnwald)
 

@@ -1,9 +1,11 @@
+import json
 import random
 from datetime import datetime
 from typing import List
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
 from fastapi import status
+from sqlalchemy.sql.operators import desc_op
 from . import models, schemas
 from .dependencies import get_hashed_password
 import logging
@@ -69,9 +71,42 @@ def get_chats_for_user(db: Session, user_id: int) -> List[models.Chat]:
     return db.query(models.Chat).filter(models.Chat.user_id == user_id).all()
 
 
+def get_contacts_for_user(db: Session, user_id: int) -> List[models.Contact]:
+    return db.query(models.Contact).filter(models.Contact.user_id == user_id).all()
+
+
+def get_contact(db: Session, user_id: int, contact_id: int) -> models.Contact:
+    return (
+        db.query(models.Contact)
+        .filter(
+            models.Contact.user_id == user_id, models.Contact.contact_id == contact_id
+        )
+        .first()
+    )
+
+
 def get_chat(db: Session, user_id: int, chat_id: int) -> models.Chat:
     return (
         db.query(models.Chat)
         .filter(models.Chat.user_id == user_id, models.Chat.chat_id == chat_id)
         .first()
+    )
+
+
+def get_last_message(db: Session, user_id: int, chat_id: int):
+    model = (
+        db.query(models.Message)
+        .filter(models.Message.chat_id == chat_id)
+        .order_by(desc_op(models.Message.sent_datetime))
+        .first()
+    )
+    return (
+        schemas.MessageResponse(
+            message_id=model.message_id,
+            contact_id=model.contact_id,
+            message=json.loads(model.message),
+            sent_datetime=model.sent_datetime,
+        )
+        if model
+        else None
     )

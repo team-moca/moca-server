@@ -44,7 +44,7 @@ class Contact(Base):
     phone = Column(String(255), nullable=True)
     avatar = Column(String(255))
     user_id = Column(Integer, ForeignKey("users.user_id"), nullable=True)
-    is_moca_user = Column(Boolean, nullable=False, default=False)
+    is_self = Column(Boolean, nullable=False, default=False)
     chats = relationship(
         "Chat",
         secondary=contacts_chats_relationship,

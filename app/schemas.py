@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Any, Dict, Optional
 from pydantic import BaseModel
 from pydantic.fields import Field
 
@@ -41,6 +41,25 @@ class Token(BaseModel):
     token_type: str
 
 
+class MessageContent(BaseModel):
+    type: str
+    content: Optional[str]
+    url: Optional[str]
+
+
+class Message(BaseModel):
+    contact_id: int
+    message: MessageContent
+    sent_datetime: datetime
+
+    class Config:
+        orm_mode = True
+
+
+class MessageResponse(Message):
+    message_id: int
+
+
 class Chat(BaseModel):
     user_id: int
     name: str
@@ -48,15 +67,34 @@ class Chat(BaseModel):
     is_archived: bool
     pin_position: Optional[int]
 
-    # last message
-
     class Config:
         orm_mode = True
 
 
 class ChatResponse(Chat):
     chat_id: int
+    last_message: MessageResponse
 
 
 class Pin(BaseModel):
     pin_position: int
+
+
+class DeleteMessageRequest(BaseModel):
+    delete_everywhere: bool
+
+
+class Contact(BaseModel):
+    service_id: str
+    name: str
+    username: str
+    phone: str
+    avatar: str
+    is_self: bool
+
+    class Config:
+        orm_mode = True
+
+
+class ContactResponse(Contact):
+    contact_id: int

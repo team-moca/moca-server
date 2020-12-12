@@ -32,10 +32,23 @@ async def get_chats(
     if not chats:
         return []
 
-    return chats
+    return [
+        ChatResponse(
+            chat_id=chat.chat_id,
+            user_id=chat.user_id,
+            name=chat.name,
+            is_muted=chat.is_muted,
+            is_archived=chat.is_archived,
+            pin_position=chat.pin_position,
+            last_message=crud.get_last_message(db, current_user.user_id, chat.chat_id),
+        )
+        for chat in chats
+    ]
 
 
-@router.delete("/{chat_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{chat_id}", status_code=status.HTTP_204_NO_CONTENT, response_class=Response
+)
 async def delete_chat(
     chat_id: int,
     current_user: UserResponse = Depends(get_current_verified_user),
