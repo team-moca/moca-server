@@ -30,5 +30,5 @@ async def register_user(register_request: RegisterRequest, db: Session = Depends
     return crud.create_user(db=db, user=register_request)
 
 @router.post("/verify")
-async def verify_user(verify_request: VerifyRequest):
-    return {}
+async def verify_user(verify_request: VerifyRequest, db: Session = Depends(get_db)):
+    return crud.verify_user(db, verify_request)

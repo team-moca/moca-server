@@ -23,7 +23,7 @@ def create_user(db: Session, user: schemas.RegisterRequest):
 
     verification_code = "{:06d}".format(random.randint(0, 999999))
 
-    _LOGGER.info(f"Verification code for user {user.username}: {verification_code}")
+    print(f"Verification code for user {user.username}: {verification_code}")
 
     db_user = models.User(
         username = user.username,
@@ -40,7 +40,7 @@ def create_user(db: Session, user: schemas.RegisterRequest):
     return db_user
 
 def verify_user(db: Session, request: schemas.VerifyRequest):
-    user = get_user_by_username(request.username)
+    user = get_user_by_username(db, request.username)
 
     if not user:
         raise HTTPException(
@@ -55,6 +55,6 @@ def verify_user(db: Session, request: schemas.VerifyRequest):
         )
 
     user.is_verified = True
-    db.session.commit()
+    db.commit()
 
     return user
