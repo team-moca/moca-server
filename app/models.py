@@ -42,7 +42,7 @@ class Contact(Base):
     username = Column(String(255))
     phone = Column(String(255), nullable=True)
     avatar = Column(String(255))
-    connector_id = Column(Integer, ForeignKey("connectors.connector_id"), nullable=True)
+    connector_id = Column(Integer, ForeignKey("connectors.connector_id", ondelete="CASCADE"), nullable=True)
     is_self = Column(Boolean, nullable=False, default=False)
     chats = relationship(
         "Chat",
@@ -76,8 +76,8 @@ class Message(Base):
     __tablename__ = "messages"
 
     message_id = Column(Integer, primary_key=True)
-    contact_id = Column(Integer, ForeignKey("contacts.contact_id"), nullable=False)
-    chat_id = Column(Integer, ForeignKey("chats.chat_id"), nullable=False)
+    contact_id = Column(Integer, ForeignKey("contacts.contact_id", ondelete="CASCADE"), nullable=False)
+    chat_id = Column(Integer, ForeignKey("chats.chat_id", ondelete="CASCADE"), nullable=False)
     message = Column(String())  # JSON
     sent_datetime = Column(DateTime())
 

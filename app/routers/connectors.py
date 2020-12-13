@@ -100,3 +100,26 @@ async def setup_connector(
         db.commit()
 
     return response
+
+@router.delete("/{connector_id}", status_code=status.HTTP_204_NO_CONTENT, response_class=Response)
+async def delete_connector(
+    connector_id: int,
+    current_user: UserResponse = Depends(get_current_verified_user),
+    db: Session = Depends(get_db),
+    pool: Pool = Depends(get_pool)
+):
+    """Delete a connector."""
+
+    connector = crud.get_connector(db, current_user.user_id, connector_id)
+
+    # response = await pool.get(f"{connector.connector_type}/users/{connector_id}/delete", {})
+
+    # if response.get("success"):
+    db.query(models.Connector).filter(
+        models.Connector.connector_id == connector_id
+    ).delete()
+    db.commit()
+
+
+    # else:
+    #     print("ERROR DELETING CONNECTOR")
