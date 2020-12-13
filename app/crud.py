@@ -72,16 +72,14 @@ def get_chats_for_user(db: Session, user_id: int) -> List[models.Chat]:
 
 
 def get_contacts_for_user(db: Session, user_id: int) -> List[models.Contact]:
-    return db.query(models.Contact).filter(models.Contact.user_id == user_id).all()
+    contacts = db.query(models.Contact).join(models.Connector).filter(models.Connector.user_id == user_id, models.Contact.connector_id == models.Connector.connector_id).all()
+    print(contacts)
+    return contacts
 
 
 def get_contact(db: Session, user_id: int, contact_id: int) -> models.Contact:
     return (
-        db.query(models.Contact)
-        .filter(
-            models.Contact.user_id == user_id, models.Contact.contact_id == contact_id
-        )
-        .first()
+        db.query(models.Contact).join(models.Connector).filter(models.Connector.user_id == user_id, models.Contact.is_self == True, models.Contact.connector_id == models.Connector.connector_id, models.Contact.contact_id == contact_id).first()
     )
 
 
@@ -122,6 +120,6 @@ def get_connector(db: Session, user_id: int, connector_id: int) -> models.Connec
 
     return connector
 
-def get_connector_by_service_id(db: Session, connector_type: str, connector_user_id: int) -> models.Connector:
-    connector = db.query(models.Connector).filter(models.Connector.connector_type == connector_type, models.Connector.connector_user_id == connector_user_id).first()
+def get_connector_by_connector_id(db: Session, connector_type: str, connector_id: int) -> models.Connector:
+    connector = db.query(models.Connector).filter(models.Connector.connector_type == connector_type, models.Connector.connector_id == connector_id).first()
     return connector

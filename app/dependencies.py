@@ -36,7 +36,7 @@ def get_db():
         db.close()
 
 pool = Pool(mqtt)
-handler = service_handler.ServiceHandler(get_db())
+handler = service_handler.ServiceHandler(pool)
 
 @mqtt.on_message()
 async def message(client, topic, payload, qos, properties):

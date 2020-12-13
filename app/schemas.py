@@ -73,7 +73,7 @@ class Chat(BaseModel):
 
 class ChatResponse(Chat):
     chat_id: int
-    last_message: MessageResponse
+    last_message: Optional[MessageResponse]
 
 
 class Pin(BaseModel):
@@ -89,7 +89,7 @@ class Contact(BaseModel):
     name: str
     username: str
     phone: str
-    avatar: str
+    avatar: Optional[str]
     is_self: bool
 
     class Config:
