@@ -1,7 +1,7 @@
 from app.pool import Pool
 from fastapi_mqtt.config import MQQTConfig
 from fastapi_mqtt.fastmqtt import FastMQTT
-from app import crud
+from app import crud, service_handler
 from sqlalchemy.orm.session import Session
 from app.database import SessionLocal
 from datetime import datetime, timedelta
@@ -28,23 +28,25 @@ mqtt = FastMQTT(
     config=mqtt_config
 )
 
-pool = Pool(mqtt)
-
-@mqtt.on_message()
-async def message(client, topic, payload, qos, properties):
-    print("Received message: ",topic, payload.decode(), qos, properties)
-    pool.handle(topic, json.loads(payload.decode()))
-
-
-def get_pool():
-    return pool
-
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
+
+pool = Pool(mqtt)
+handler = service_handler.ServiceHandler(get_db())
+
+@mqtt.on_message()
+async def message(client, topic, payload, qos, properties):
+    message = json.loads(payload.decode())
+    pool.handle(topic, message)
+    await handler.handle(topic, message)
+
+def get_pool():
+    return pool
+
 
 
 def fake_user(username: str):

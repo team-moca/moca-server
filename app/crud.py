@@ -121,3 +121,7 @@ def get_connector(db: Session, user_id: int, connector_id: int) -> models.Connec
         )
 
     return connector
+
+def get_connector_by_service_id(db: Session, connector_type: str, connector_user_id: int) -> models.Connector:
+    connector = db.query(models.Connector).filter(models.Connector.connector_type == connector_type, models.Connector.connector_user_id == connector_user_id).first()
+    return connector
