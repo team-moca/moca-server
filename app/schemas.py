@@ -87,8 +87,8 @@ class DeleteMessageRequest(BaseModel):
 class Contact(BaseModel):
     service_id: str
     name: str
-    username: str
-    phone: str
+    username: Optional[str]
+    phone: Optional[str]
     avatar: Optional[str]
     is_self: bool
 

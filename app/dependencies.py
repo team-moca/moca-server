@@ -17,7 +17,7 @@ import json
 # WARNING! This is a dev key only. DO NOT use this in production.
 SECRET_KEY = "f61e42feaed37bec38837b107c4ee1b02c2c0493b240dc5f66865aa1596976f6"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_DAYS = 30
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")

@@ -1,3 +1,4 @@
+from datetime import datetime
 from starlette.responses import Response
 from app.models import Chat
 from typing import List
@@ -32,7 +33,7 @@ async def get_chats(
     if not chats:
         return []
 
-    return [
+    return sorted([
         ChatResponse(
             chat_id=chat.chat_id,
             user_id=chat.user_id,
@@ -43,7 +44,7 @@ async def get_chats(
             last_message=crud.get_last_message(db, current_user.user_id, chat.chat_id),
         )
         for chat in chats
-    ]
+    ], key=lambda chat: chat.last_message.sent_datetime if chat.last_message else datetime.min, reverse=True)
 
 
 @router.delete(

@@ -3,7 +3,7 @@ from datetime import timedelta
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm.session import Session
 from app.dependencies import (
-    ACCESS_TOKEN_EXPIRE_MINUTES,
+    ACCESS_TOKEN_EXPIRE_DAYS,
     authenticate_user,
     create_access_token,
     get_current_verified_user,
@@ -30,7 +30,7 @@ async def login(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
     access_token = create_access_token(
         data={"sub": str(user.user_id), "username": user.username},
         expires_delta=access_token_expires,
@@ -42,7 +42,7 @@ async def login(
 async def refresh(user: UserResponse = Depends(get_current_verified_user)):
     """Get a refresh token."""
 
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
     access_token = create_access_token(
         data={"sub": str(user.user_id), "username": user.username},
         expires_delta=access_token_expires,

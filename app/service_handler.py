@@ -73,7 +73,20 @@ class ServiceHandler:
 
                             # check if contact exists, else request contact
                             if not crud.get_contact(db, connector.user_id, contact_id):
-                                await self.get_contact(connector.connector_id, contact_id)
+                                contact = await self.get_contact(connector.connector_id, contact_id)
+                                print(f"Got contact from service: {contact}")
+                                new_contact = models.Contact(
+                                    contact_id = contact_id,
+                                    service_id = connector.connector_type,
+                                    connector_id=connector.connector_id,
+                                    name=contact.get("name"),
+                                    username=contact.get("username"),
+                                    phone=contact.get("phone"),
+                                    avatar=contact.get("avatar"),
+                                    is_self=False
+                                )
+                                db.merge(new_contact)
+                                db.commit()
 
                             new_last_message = models.Message(
                                 message_id=last_message.get("message_id"),
@@ -84,6 +97,42 @@ class ServiceHandler:
                             )
 
                             db.merge(new_last_message)
+                            db.commit()
+                elif command == "messages":
+                    for message_data in payload:
+
+                        # Get contact of the sender, else ask for it
+                        contact_id = message_data.get("contact_id")
+
+                        # check if contact exists, else request contact
+                        if not crud.get_contact(db, connector.user_id, contact_id):
+                            contact = await self.get_contact(connector.connector_id, contact_id)
+                            print(f"Got contact from service: {contact}")
+                            new_contact = models.Contact(
+                                contact_id = contact_id,
+                                service_id = connector.connector_type,
+                                connector_id=connector.connector_id,
+                                name=contact.get("name"),
+                                username=contact.get("username"),
+                                phone=contact.get("phone"),
+                                avatar=contact.get("avatar"),
+                                is_self=False
+                            )
+                            db.merge(new_contact)
+                            db.commit()
+
+                        new_last_message = models.Message(
+                            message_id=message_data.get("message_id"),
+                            contact_id=contact_id,
+                            chat_id=message_data.get("chat_id"),
+                            message=json.dumps(message_data.get("message")),
+                            sent_datetime=datetime.fromisoformat(message_data.get("sent_datetime"))
+                        )
+
+                        db.merge(new_last_message)
+                        db.commit()
+
+
         finally:
             db.close()
 
