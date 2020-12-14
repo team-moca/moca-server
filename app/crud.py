@@ -73,7 +73,6 @@ def get_chats_for_user(db: Session, user_id: int) -> List[models.Chat]:
 
 def get_contacts_for_user(db: Session, user_id: int) -> List[models.Contact]:
     contacts = db.query(models.Contact).join(models.Connector).filter(models.Connector.user_id == user_id, models.Contact.connector_id == models.Connector.connector_id).all()
-    print(contacts)
     return contacts
 
 

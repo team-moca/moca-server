@@ -125,3 +125,7 @@ class Session(BaseModel):
 
 class SessionResponse(Session):
     session_id: int
+
+class Pagination(BaseModel):
+    page: int
+    count: int

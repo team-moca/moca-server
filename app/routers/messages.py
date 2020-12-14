@@ -1,4 +1,5 @@
 import json
+from sqlalchemy.sql.operators import desc_op
 from starlette.responses import Response
 from app import models
 from app.models import Chat
@@ -7,14 +8,14 @@ from fastapi.exceptions import HTTPException
 from starlette.routing import request_response
 from app import crud
 from sqlalchemy.orm import Session
-from app.dependencies import get_current_user, get_current_verified_user, get_db
+from app.dependencies import get_current_user, get_current_verified_user, get_db, get_pagination
 from fastapi.param_functions import Depends
 from app.schemas import (
     ChatResponse,
     DeleteMessageRequest,
     Message,
     MessageContent,
-    MessageResponse,
+    MessageResponse, Pagination,
     Pin,
     RegisterRequest,
     User,
@@ -29,6 +30,7 @@ router = APIRouter(prefix="/chats/{chat_id}/messages", tags=["messages"])
 @router.get("", response_model=List[MessageResponse])
 async def get_messages(
     chat_id: int,
+    pagination: Pagination = Depends(get_pagination),
     current_user: UserResponse = Depends(get_current_verified_user),
     db: Session = Depends(get_db),
 ):
@@ -42,7 +44,7 @@ async def get_messages(
             detail=f"The chat with id {chat_id} does not exist.",
         )
 
-    messages = db.query(models.Message).filter(models.Message.chat_id == chat_id).all()
+    messages = db.query(models.Message).filter(models.Message.chat_id == chat_id).order_by(desc_op(models.Message.sent_datetime)).limit(pagination.count).offset(pagination.page * pagination.count).all()
 
     if not messages:
         return []

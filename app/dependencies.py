@@ -6,7 +6,7 @@ from sqlalchemy.orm.session import Session
 from app.database import SessionLocal
 from datetime import datetime, timedelta
 from typing import Optional
-from app.schemas import AuthUser, UserResponse
+from app.schemas import AuthUser, Pagination, UserResponse
 from fastapi.params import Depends
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import HTTPException, status
@@ -135,3 +135,6 @@ async def get_current_verified_user(current_user: AuthUser = Depends(get_current
     if not current_user.is_verified:
         raise HTTPException(status_code=400, detail="User not verified.")
     return current_user
+
+async def get_pagination(page: int = 0, count: int = 10):
+    return Pagination(page=page, count=count)

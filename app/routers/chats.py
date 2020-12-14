@@ -1,15 +1,20 @@
 from datetime import datetime
+import json
+from sqlalchemy.sql.functions import func
+from sqlalchemy.sql.operators import desc_op
 from starlette.responses import Response
+from app import models
+from app import schemas
 from app.models import Chat
 from typing import List
 from fastapi.exceptions import HTTPException
 from starlette.routing import request_response
 from app import crud
 from sqlalchemy.orm import Session
-from app.dependencies import get_current_user, get_current_verified_user, get_db
+from app.dependencies import get_current_user, get_current_verified_user, get_db, get_pagination
 from fastapi.param_functions import Depends
 from app.schemas import (
-    ChatResponse,
+    ChatResponse, Pagination,
     Pin,
     RegisterRequest,
     User,
@@ -23,28 +28,40 @@ router = APIRouter(prefix="/chats", tags=["chats"])
 
 @router.get("", response_model=List[ChatResponse])
 async def get_chats(
+    pagination: Pagination = Depends(get_pagination),
     current_user: UserResponse = Depends(get_current_verified_user),
     db: Session = Depends(get_db),
 ):
     """Get a list of all chats the user has."""
-
-    chats = crud.get_chats_for_user(db, current_user.user_id)
-
-    if not chats:
+    
+    chats_with_message = db.query(
+        models.Chat,
+        models.Message,
+        func.max(models.Message.sent_datetime)
+    ).join(models.Message).group_by(
+        models.Message.chat_id
+    ).order_by(desc_op(models.Message.sent_datetime)).limit(pagination.count).offset(pagination.page * pagination.count).all()
+    
+    if not chats_with_message:
         return []
 
-    return sorted([
+    return [
         ChatResponse(
-            chat_id=chat.chat_id,
-            user_id=chat.user_id,
-            name=chat.name,
-            is_muted=chat.is_muted,
-            is_archived=chat.is_archived,
-            pin_position=chat.pin_position,
-            last_message=crud.get_last_message(db, current_user.user_id, chat.chat_id),
+            chat_id=chat_with_message[0].chat_id,
+            user_id=chat_with_message[0].user_id,
+            name=chat_with_message[0].name,
+            is_muted=chat_with_message[0].is_muted,
+            is_archived=chat_with_message[0].is_archived,
+            pin_position=chat_with_message[0].pin_position,
+            last_message=schemas.MessageResponse(
+                message_id=chat_with_message[1].message_id,
+                contact_id=chat_with_message[1].contact_id,
+                message=json.loads(chat_with_message[1].message),
+                sent_datetime=chat_with_message[1].sent_datetime,
+            ) if chat_with_message[1] else None,
         )
-        for chat in chats
-    ], key=lambda chat: chat.last_message.sent_datetime if chat.last_message else datetime.min, reverse=True)
+        for chat_with_message in chats_with_message
+    ]
 
 
 @router.delete(
