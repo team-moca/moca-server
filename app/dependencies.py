@@ -1,7 +1,7 @@
 from app.pool import Pool
 from fastapi_mqtt.config import MQQTConfig
 from fastapi_mqtt.fastmqtt import FastMQTT
-from app import crud, service_handler
+from app import crud, models, service_handler
 from sqlalchemy.orm.session import Session
 from app.database import SessionLocal
 from datetime import datetime, timedelta
@@ -94,10 +94,6 @@ def authenticate_user(username: str, password: str, db: Session):
     return user
 
 
-def fake_decode_token(token):
-    return fake_user(token + "fakedecoded")
-
-
 async def get_current_user(
     token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
 ):
@@ -109,14 +105,30 @@ async def get_current_user(
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         sub: str = payload.get("sub")
-        if sub is None:
+        jti: str = payload.get("jti")
+        if sub is None or jti is None:
             raise credentials_exception
     except JWTError as e:
+        print("A", e)
         raise credentials_exception
     user = crud.get_user(db, int(sub))
     if user is None:
+        print("B")
         raise credentials_exception
-    return user
+
+    # get sessions and see if token is still valid
+    session = db.query(models.Session).filter(models.Session.session_id == int(jti), models.Session.valid_until > datetime.now()).first()
+
+    if session is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token expired",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    auth_user = AuthUser.from_orm(user)
+    auth_user.session_id = jti
+
+    return auth_user
 
 
 async def get_current_verified_user(current_user: AuthUser = Depends(get_current_user)):

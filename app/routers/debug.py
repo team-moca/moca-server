@@ -1,7 +1,7 @@
 from app.database import Base
 import json
-from datetime import datetime
-from app.models import Chat, Contact, Message, User, Connector
+from datetime import datetime, timedelta
+from app.models import Chat, Contact, Message, User, Connector, Session as SessionModel
 from app.dependencies import get_db, get_hashed_password
 from fastapi import APIRouter
 from fastapi import Depends
@@ -38,6 +38,14 @@ async def seed(db: Session = Depends(get_db)):
         is_verified=True,
     )
     db.add(new_user)
+
+    # Create new login session
+    new_session = SessionModel(
+        user_id=1,
+        name="iPhone von Jonas",
+        valid_until=datetime.now() + timedelta(days=30)
+    )
+    db.add(new_session)
 
     # Create Demo connector
 

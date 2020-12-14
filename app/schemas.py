@@ -23,8 +23,10 @@ class UserResponse(User):
     updated_at: datetime
 
 
-class AuthUser(User):
+class AuthUser(UserResponse):
     hashed_password: str
+    session_id: Optional[str]
+    is_verified: bool
 
 
 class RegisterRequest(User):
@@ -113,3 +115,13 @@ class ConnectorResponse(Connector):
 
 class InitializeConnectorRequest(BaseModel):
     connector_type: str
+
+class Session(BaseModel):
+    name: Optional[str]
+    valid_until: datetime
+
+    class Config:
+        orm_mode = True
+
+class SessionResponse(Session):
+    session_id: int

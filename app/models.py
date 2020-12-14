@@ -98,3 +98,14 @@ class Connector(Base):
 
     def __repr__(self):
         return "<%s-Connector %s>" % (self.connector_type, self.connector_id)
+
+class Session(Base):
+    __tablename__ = "sessions"
+
+    session_id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.user_id"))
+    name = Column(String(255))
+    valid_until = Column(DateTime())
+
+    def __repr__(self):
+        return "<Session %s (%s)>" % (self.session_id, self.name)
