@@ -50,16 +50,16 @@ class MessageContent(BaseModel):
 
 
 class Message(BaseModel):
-    contact_id: int
     message: MessageContent
-    sent_datetime: datetime
 
     class Config:
         orm_mode = True
 
 
 class MessageResponse(Message):
+    contact_id: int
     message_id: int
+    sent_datetime: datetime
 
 
 class Chat(BaseModel):

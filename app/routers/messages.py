@@ -1,3 +1,5 @@
+from datetime import datetime
+from app.pool import Pool
 import json
 from sqlalchemy.sql.operators import desc_op
 from starlette.responses import Response
@@ -8,7 +10,7 @@ from fastapi.exceptions import HTTPException
 from starlette.routing import request_response
 from app import crud
 from sqlalchemy.orm import Session
-from app.dependencies import get_current_user, get_current_verified_user, get_db, get_pagination
+from app.dependencies import get_current_user, get_current_verified_user, get_db, get_pagination, get_pool
 from fastapi.param_functions import Depends
 from app.schemas import (
     ChatResponse,
@@ -64,16 +66,36 @@ async def get_messages(
 async def send_message(
     chat_id: int,
     message: Message,
+    pool: Pool = Depends(get_pool),
     current_user: UserResponse = Depends(get_current_verified_user),
     db: Session = Depends(get_db),
 ):
+
+    chat = crud.get_chat(db, current_user.user_id, chat_id)
+
+    if not chat:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"The chat with id {chat_id} does not exist.",
+        )
+
+    connector_id = chat.contacts[0].contact.connector_id
+    connector = crud.get_connector(db, current_user.user_id, connector_id)
+
+    print(connector_id)
+
+    sent = await pool.get(f"{connector.connector_type}/users/{connector.connector_id}/send_message", {"chat_id": chat_id, "message": message.message.__dict__})
+    print(sent)
+
+
     new_message = models.Message(
+        message_id=sent.get("message_id"),
         chat_id=chat_id,
-        contact_id=message.contact_id,
-        message=json.dumps(message.message),
-        sent_datetime=message.sent_datetime,
+        contact_id=connector.connector_user_id,
+        message=json.dumps(message.message.__dict__),
+        sent_datetime=datetime.now(),
     )
-    db.add(new_message)
+    db.merge(new_message)
     db.commit()
 
     return MessageResponse(

@@ -4,13 +4,14 @@ from .database import Base
 from sqlalchemy.sql import func
 
 # many to many relationship
-contacts_chats_relationship = Table(
-    "contacts_chats_relationship",
-    Base.metadata,
-    Column("contact_id", Integer, ForeignKey("contacts.contact_id"), primary_key=True),
-    Column("chat_id", Integer, ForeignKey("chats.chat_id"), primary_key=True),
-)
+class ContactsChatsRelationship(Base):
+    __tablename__ = "contacts_chats_relationship"
 
+    contact_id = Column(Integer, ForeignKey("contacts.contact_id"), primary_key=True)
+    chat_id = Column(Integer, ForeignKey("chats.chat_id"), primary_key=True)
+
+    contact = relationship("Contact", back_populates="chats")
+    chat = relationship("Chat", back_populates="contacts")
 
 class User(Base):
     __tablename__ = "users"
@@ -44,13 +45,9 @@ class Contact(Base):
     avatar = Column(String(255))
     connector_id = Column(Integer, ForeignKey("connectors.connector_id", ondelete="CASCADE"), nullable=True)
     is_self = Column(Boolean, nullable=False, default=False)
-    chats = relationship(
-        "Chat",
-        secondary=contacts_chats_relationship,
-        lazy=True,
-        backref=backref("contacts", lazy="subquery"),
-    )
     messages = relationship("Message", backref="contacts", lazy=True)
+
+    chats = relationship("ContactsChatsRelationship", back_populates="contact")
 
     def __repr__(self):
         return "<Contact %s@%s>" % (self.name, self.service_id)
@@ -66,6 +63,7 @@ class Chat(Base):
     is_muted = Column(Boolean())
     is_archived = Column(Boolean())
     pin_position = Column(Integer(), nullable=True)
+    contacts = relationship("ContactsChatsRelationship", back_populates="chat")
     messages = relationship("Message", backref="chats", lazy=True)
 
     def __repr__(self):

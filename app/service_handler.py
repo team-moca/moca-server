@@ -53,17 +53,7 @@ class ServiceHandler:
                 elif command == "chats":
                     for chat_data in payload:
                         chat_id = int(chat_data.get("chat_id"))
-                        new_chat = models.Chat(
-                            user_id=connector.user_id,
-                            chat_id=chat_id,
-                            name=chat_data.get("name"),
-                            is_muted=False,
-                            is_archived=False,
-                            contacts=[],
-                        )
-                        db.merge(new_chat)
-                        db.commit()
-
+                        
                         last_message = chat_data.get("last_message")
 
                         if last_message:
@@ -98,6 +88,48 @@ class ServiceHandler:
 
                             db.merge(new_last_message)
                             db.commit()
+
+                        participants = chat_data.get("participants")
+                        chat_contacts = []
+                        if participants:
+                            print(participants)
+                            for participant in participants:
+                                c = crud.get_contact(db, connector.user_id, participant)
+                                if not c:
+                                    contact = await self.get_contact(connector.connector_id, participant)
+                                    print(f"Got contact from service: {contact}")
+                                    c = models.Contact(
+                                        contact_id = participant,
+                                        service_id = connector.connector_type,
+                                        connector_id=connector.connector_id,
+                                        name=contact.get("name"),
+                                        username=contact.get("username"),
+                                        phone=contact.get("phone"),
+                                        avatar=contact.get("avatar"),
+                                        is_self=False
+                                    )
+                                    db.merge(c)
+                                    db.commit()
+
+                                chat_contacts.append(c)
+
+                                db.add(models.ContactsChatsRelationship(contact_id=participant, chat_id=chat_id))
+
+                        db.query(models.Chat).filter(models.Chat.chat_id == chat_id).delete()
+                        db.commit()
+
+                        new_chat = models.Chat(
+                            user_id=connector.user_id,
+                            chat_id=chat_id,
+                            name=chat_data.get("name"),
+                            is_muted=False,
+                            is_archived=False,
+                        )
+
+                        db.add(new_chat)
+                        db.commit()
+
+
                 elif command == "messages":
                     for message_data in payload:
 

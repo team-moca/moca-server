@@ -1,3 +1,4 @@
+from app import models
 from app.database import Base
 import json
 from datetime import datetime, timedelta
@@ -89,11 +90,13 @@ async def seed(db: Session = Depends(get_db)):
         name="Windener Jugend",
         is_muted=False,
         is_archived=False,
-        contacts=[contact_jkahnwald, contact_mnielsen],
     )
     db.add(new_chat)
 
     db.commit()
+
+    db.add(models.ContactsChatsRelationship(contact_id=contact_jkahnwald.contact_id, chat_id=new_chat.chat_id))
+    db.add(models.ContactsChatsRelationship(contact_id=contact_mnielsen.contact_id, chat_id=new_chat.chat_id))
 
     # Create messages
 
