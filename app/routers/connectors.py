@@ -112,13 +112,13 @@ async def delete_connector(
 
     connector = crud.get_connector(db, current_user.user_id, connector_id)
 
-    # response = await pool.get(f"{connector.connector_type}/users/{connector_id}/delete", {})
+    response = await pool.get(f"{connector.connector_type}/users/{connector_id}/delete", {})
 
-    # if response.get("success"):
-    db.query(models.Connector).filter(
-        models.Connector.connector_id == connector_id
-    ).delete()
-    db.commit()
+    if response.get("success"):
+        db.query(models.Connector).filter(
+            models.Connector.connector_id == connector_id
+        ).delete()
+        db.commit()
 
 
     # else:
