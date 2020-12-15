@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import Enum
 from typing import Any, Dict, Optional
 from pydantic import BaseModel
 from pydantic.fields import Field
@@ -42,11 +43,26 @@ class Token(BaseModel):
     access_token: str
     token_type: str
 
+class MessageType(str, Enum):
+    text = 'text'
+    photo = 'photo'
+    audio = 'audio'
+    voice = 'voice'
+    video = 'video'
+    gif = 'gif'
+    document = 'document'
+    contact = 'contact'
+    geo = 'geo'
+
+class GeoPoint(BaseModel):
+    lon: float
+    lat: float
 
 class MessageContent(BaseModel):
-    type: str
+    type: MessageType
     content: Optional[str]
     url: Optional[str]
+    geo_point: Optional[GeoPoint]
 
 
 class Message(BaseModel):
