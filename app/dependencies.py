@@ -23,7 +23,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
-mqtt_config = MQQTConfig()
+mqtt_config = MQQTConfig(hostname="localhost")
 mqtt = FastMQTT(
     config=mqtt_config
 )
