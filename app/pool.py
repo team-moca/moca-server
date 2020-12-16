@@ -58,6 +58,54 @@ class Pool:
             await asyncio.sleep(0.1)
             self.topics[topic] += 0.1
 
+
+    async def get_bytes(self, topic: str, payload: Dict, timeout: int = 10) -> bytes:
+        """Get bytes for the topic."""
+
+        # Handle topic
+        self.topics[topic] = 0
+
+        # Subscribe to response topic
+        self.mqtt.client.subscribe(f"{topic}/response")
+        self.mqtt.client.subscribe(f"{topic}/keepalive")
+
+        print(["Listening for bytes on:", f"{topic}/response", f"{topic}/keepalive"])
+
+        # Publish data
+        await self.mqtt.publish(topic, json.dumps(payload))
+
+        # Wait for response (with timeout and keepalive)
+
+        data = b""
+
+        while True:
+            response = self._get(topic)
+            if response:
+
+                if not response.get("data"):
+
+                    # Unsubscribe
+                    await self.mqtt.unsubscribe(f"{topic}/response")
+                    await self.mqtt.unsubscribe(f"{topic}/keepalive")
+
+                    del self.topics[topic]
+
+                    # Return response
+                    return data
+
+                else:
+                    data = data + response.get("data").encode()
+                    self.topics[topic] = 0
+
+            if self.topics[topic] > timeout:
+                raise HTTPException(
+                    status_code=HTTP_504_GATEWAY_TIMEOUT,
+                    detail="A connected server did not answer in time."
+                )
+
+            await asyncio.sleep(0.1)
+            self.topics[topic] += 0.1
+
     def handle(self, topic: str, payload: Dict):
         """Handle an incoming mqtt message."""
 

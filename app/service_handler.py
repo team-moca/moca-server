@@ -1,3 +1,4 @@
+import uuid
 from app.pool import Pool
 from datetime import datetime
 import json
@@ -170,4 +171,4 @@ class ServiceHandler:
 
 
     async def get_contact(self, connector_id, contact_id):
-        return await self.pool.get(f"telegram/users/{connector_id}/get_contact/{contact_id}", {})
+        return await self.pool.get(f"telegram/{connector_id}/{str(uuid.uuid4())}/get_contact/{contact_id}", {})

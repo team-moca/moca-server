@@ -1,3 +1,4 @@
+import uuid
 import json
 from app.pool import Pool
 from starlette.responses import Response
@@ -76,7 +77,7 @@ async def setup_connector(
 
     connector = crud.get_connector(db, current_user.user_id, connector_id)
 
-    response = await pool.get(f"{connector.connector_type}/configure/{connector_id}", request)
+    response = await pool.get(f"{connector.connector_type}/{connector_id}/{str(uuid.uuid4())}/configure", request)
 
     if response.get("step") == "finished":
         contact = response.get("data", {}).get("contact")
@@ -112,7 +113,7 @@ async def delete_connector(
 
     connector = crud.get_connector(db, current_user.user_id, connector_id)
 
-    response = await pool.get(f"{connector.connector_type}/users/{connector_id}/delete", {})
+    response = await pool.get(f"{connector.connector_type}/{connector_id}/{str(uuid.uuid4())}/delete_connector", {})
 
     if response.get("success"):
         db.query(models.Connector).filter(

@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 from app.pool import Pool
 import json
@@ -84,7 +85,7 @@ async def send_message(
 
     print(connector_id)
 
-    sent = await pool.get(f"{connector.connector_type}/users/{connector.connector_id}/send_message", {"chat_id": chat_id, "message": message.message.__dict__})
+    sent = await pool.get(f"{connector.connector_type}/{connector.connector_id}/{str(uuid.uuid4())}/send_message", {"chat_id": chat_id, "message": message.message.__dict__})
     print(sent)
 
 

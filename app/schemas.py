@@ -44,8 +44,9 @@ class Token(BaseModel):
     token_type: str
 
 class MessageType(str, Enum):
+    unsupported = 'unsupported'
     text = 'text'
-    photo = 'photo'
+    image = 'image'
     audio = 'audio'
     voice = 'voice'
     video = 'video'

@@ -104,21 +104,8 @@ Service responds `demo/configure/42/response`
 
 The service should answer to these requests with the same topic, but with `/response` appended to it.
 
-### Old API
 
-`{service_type}/users/{connector_id}/get_chats {}`
-
-`{service_type}/users/{connector_id}/get_contacts {}`
-
-`{service_type}/users/{connector_id}/send_message {...}`
-
-`{service_type}/users/{connector_id}/delete {}`
-
-`{service_type}/users/{connector_id}/get_messages/{message_id} {}`
-
-`{service_type}/users/{connector_id}/get_contact/{contact_id} {}`
-
-### New proposed API
+### Request API
 
 `{service_type}/{connector_id}/{uuid}/get_contacts {}`
 `{service_type}/{connector_id}/{uuid}/get_contact/{contact_id} {}`
@@ -127,9 +114,12 @@ The service should answer to these requests with the same topic, but with `/resp
 `{service_type}/{connector_id}/{uuid}/get_chat/{chat_id} {}`
 
 `{service_type}/{connector_id}/{uuid}/get_messages/{chat_id} {}`
-`{service_type}/{connector_id}/{uuid}/send_message/{chat_id} {...}`
+`{service_type}/{connector_id}/{uuid}/send_message {...}`
 
+`{service_type}/{connector_id}/{uuid}/configure {}`
 `{service_type}/{connector_id}/{uuid}/delete_connector {}`
+
+`{service_type}/{connector_id}/{uuid}/get_media_file/{media_uri} {}`
 
 ## Push API
 
