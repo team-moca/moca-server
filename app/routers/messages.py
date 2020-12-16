@@ -85,19 +85,30 @@ async def send_message(
 
     print(connector_id)
 
-    sent = await pool.get(f"{connector.connector_type}/{connector.connector_id}/{str(uuid.uuid4())}/send_message", {"chat_id": chat_id, "message": message.message.__dict__})
-    print(sent)
+    if connector.connector_type == "DEMO":
+        new_message = models.Message(
+            chat_id=chat_id,
+            contact_id=connector.connector_user_id,
+            message=json.dumps(message.message.__dict__),
+            sent_datetime=datetime.now(),
+        )
+        db.add(new_message)
+        db.commit()
+
+    else:
+        sent = await pool.get(f"{connector.connector_type}/{connector.connector_id}/{str(uuid.uuid4())}/send_message", {"chat_id": chat_id, "message": message.message.__dict__})
+        print(sent)
 
 
-    new_message = models.Message(
-        message_id=sent.get("message_id"),
-        chat_id=chat_id,
-        contact_id=connector.connector_user_id,
-        message=json.dumps(message.message.__dict__),
-        sent_datetime=datetime.now(),
-    )
-    db.merge(new_message)
-    db.commit()
+        new_message = models.Message(
+            message_id=sent.get("message_id"),
+            chat_id=chat_id,
+            contact_id=connector.connector_user_id,
+            message=json.dumps(message.message.__dict__),
+            sent_datetime=datetime.now(),
+        )
+        db.merge(new_message)
+        db.commit()
 
     return MessageResponse(
         message_id=new_message.message_id,
