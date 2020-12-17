@@ -178,7 +178,7 @@ async def download_media(
 
     print(connector_id)
 
-    uri = f"{connector.connector_type}:{connector_id}:{chat_id}:{message_id}"
+    uri = f"{chat_id}:{message_id}"
 
     filename, mime, data = await pool.get_bytes(f"{connector.connector_type}/{connector_id}/{uuid.uuid4()}/get_media/{uri}", {})
 
