@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.params import Depends
 from setuptools_scm import get_version
 from starlette.responses import RedirectResponse
-from app.routers import auth, chats, connectors, contacts, debug, files, messages, sessions, users, info
+from app.routers import auth, chats, connectors, contacts, debug, messages, sessions, users, info
 from app.dependencies import mqtt
 import logging
 from fastapi_mqtt import FastMQTT, MQQTConfig
@@ -23,7 +23,6 @@ app.include_router(sessions.router)
 app.include_router(contacts.router)
 app.include_router(chats.router)
 app.include_router(messages.router)
-app.include_router(files.router)
 app.include_router(connectors.router)
 
 

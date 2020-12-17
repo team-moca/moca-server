@@ -154,3 +154,41 @@ async def edit_message(
 
     edit_message.message = json.dumps(message.__dict__)
     db.commit()
+
+@router.get(
+    "/{message_id}/media", response_class=Response
+)
+async def download_media(
+    chat_id: int,
+    message_id: int,
+    current_user: UserResponse = Depends(get_current_verified_user),
+    pool: Pool = Depends(get_pool),
+    db: Session = Depends(get_db),
+):
+    chat = crud.get_chat(db, current_user.user_id, chat_id)
+
+    if not chat:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"The chat with id {chat_id} does not exist.",
+        )
+
+    connector_id = chat.contacts[0].contact.connector_id
+    connector = crud.get_connector(db, current_user.user_id, connector_id)
+
+    print(connector_id)
+
+    uri = f"{connector.connector_type}:{connector_id}:{chat_id}:{message_id}"
+
+    filename, mime, data = await pool.get_bytes(f"{connector.connector_type}/{connector_id}/{uuid.uuid4()}/get_media/{uri}", {})
+
+    print(filename, mime)
+
+    if data:
+
+        return Response(data, media_type=mime)
+
+    raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"File {filename} does not exist.",
+        )

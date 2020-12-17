@@ -1,5 +1,7 @@
+from queue import Queue, Empty
+import base64
 import asyncio
-from typing import Dict
+from typing import Dict, Tuple
 import json
 from fastapi_mqtt.fastmqtt import FastMQTT
 from fastapi import HTTPException, status
@@ -13,19 +15,12 @@ class Pool:
         self.pool = {}
         self.topics = {}
 
-    def _get(self, topic):
-        response = self.pool.get(topic)
-
-        if response:
-            del self.pool[topic]
-
-        return response
-
     async def get(self, topic: str, payload: Dict, timeout: int = 10):
         """Get the response for the topic."""
 
         # Handle topic
         self.topics[topic] = 0
+        self.pool[topic] = Queue()
 
         # Subscribe to response topic
         self.mqtt.client.subscribe(f"{topic}/response")
@@ -38,8 +33,9 @@ class Pool:
 
         # Wait for response (with timeout and keepalive)
         while True:
-            response = self._get(topic)
-            if response:
+            try:
+                response = self.pool.get(topic).get_nowait()
+            
                 # Unsubscribe
                 await self.mqtt.unsubscribe(f"{topic}/response")
                 await self.mqtt.unsubscribe(f"{topic}/keepalive")
@@ -48,6 +44,9 @@ class Pool:
 
                 # Return response
                 return response
+
+            except Empty:
+                pass
 
             if self.topics[topic] > timeout:
                 raise HTTPException(
@@ -59,11 +58,12 @@ class Pool:
             self.topics[topic] += 0.1
 
 
-    async def get_bytes(self, topic: str, payload: Dict, timeout: int = 10) -> bytes:
-        """Get bytes for the topic."""
+    async def get_bytes(self, topic: str, payload: Dict, timeout: int = 30) -> Tuple[str, str, bytes]:
+        """Get filename, mime type and bytes for the topic."""
 
         # Handle topic
         self.topics[topic] = 0
+        self.pool[topic] = Queue()
 
         # Subscribe to response topic
         self.mqtt.client.subscribe(f"{topic}/response")
@@ -79,8 +79,8 @@ class Pool:
         data = b""
 
         while True:
-            response = self._get(topic)
-            if response:
+            try:
+                response = self.pool.get(topic).get_nowait()
 
                 if not response.get("data"):
 
@@ -91,11 +91,15 @@ class Pool:
                     del self.topics[topic]
 
                     # Return response
-                    return data
+                    return response.get("filename"), response.get("mime"), data
 
                 else:
-                    data = data + response.get("data").encode()
+                    print("GOT DATA")
+                    data = data + base64.b64decode(response.get("data").encode())
                     self.topics[topic] = 0
+
+            except Empty:
+                pass
 
             if self.topics[topic] > timeout:
                 raise HTTPException(
@@ -115,7 +119,7 @@ class Pool:
             real_topic = topic[:-9]
             if real_topic in self.topics.keys():
                 print("Topic is a response")
-                self.pool[real_topic] = payload
+                self.pool[real_topic].put(payload)
 
         elif topic.endswith("/keepalive"):
             real_topic = topic[:-10]
