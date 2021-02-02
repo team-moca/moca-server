@@ -56,8 +56,8 @@ class Contact(Base):
 class Chat(Base):
     __tablename__ = "chats"
 
-    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
     chat_id = Column(Integer, primary_key=True)
+    connector_id = Column(Integer, ForeignKey("connectors.connector_id"), nullable=False)
     name = Column(String(255))
     # chat_type = Column(String(255))
     is_muted = Column(Boolean())

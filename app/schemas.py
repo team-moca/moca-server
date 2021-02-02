@@ -80,7 +80,7 @@ class MessageResponse(Message):
 
 
 class Chat(BaseModel):
-    user_id: int
+    connector_id: int
     name: str
     is_muted: bool
     is_archived: bool

@@ -86,7 +86,7 @@ async def seed(db: Session = Depends(get_db)):
     # Create Chats
 
     new_chat = Chat(
-        user_id=1,
+        connector_id=new_connector.connector_id,
         name="Windener Jugend",
         is_muted=False,
         is_archived=False,

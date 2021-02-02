@@ -36,10 +36,13 @@ async def get_chats(
     
     chats_with_message = db.query(
         models.Chat,
+        models.Connector,
         models.Message,
         func.max(models.Message.sent_datetime)
-    ).join(models.Message).group_by(
+    ).join(models.Connector).join(models.Message).group_by(
         models.Message.chat_id
+    ).filter(
+        models.Connector.user_id == current_user.user_id
     ).order_by(desc_op(models.Message.sent_datetime)).limit(pagination.count).offset(pagination.page * pagination.count).all()
     
     if not chats_with_message:
@@ -48,17 +51,17 @@ async def get_chats(
     return [
         ChatResponse(
             chat_id=chat_with_message[0].chat_id,
-            user_id=chat_with_message[0].user_id,
+            connector_id=chat_with_message[0].connector_id,
             name=chat_with_message[0].name,
             is_muted=chat_with_message[0].is_muted,
             is_archived=chat_with_message[0].is_archived,
             pin_position=chat_with_message[0].pin_position,
             last_message=schemas.MessageResponse(
-                message_id=chat_with_message[1].message_id,
-                contact_id=chat_with_message[1].contact_id,
-                message=json.loads(chat_with_message[1].message),
-                sent_datetime=chat_with_message[1].sent_datetime,
-            ) if chat_with_message[1] else None,
+                message_id=chat_with_message[2].message_id,
+                contact_id=chat_with_message[2].contact_id,
+                message=json.loads(chat_with_message[2].message),
+                sent_datetime=chat_with_message[2].sent_datetime,
+            ) if chat_with_message[2] else None,
         )
         for chat_with_message in chats_with_message
     ]

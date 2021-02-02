@@ -68,7 +68,7 @@ def verify_user(db: Session, request: schemas.VerifyRequest):
 
 
 def get_chats_for_user(db: Session, user_id: int) -> List[models.Chat]:
-    return db.query(models.Chat).filter(models.Chat.user_id == user_id).all()
+    return db.query(models.Chat).join(models.Connector).filter(models.Connector.user_id == user_id).all()
 
 
 def get_contacts_for_user(db: Session, user_id: int) -> List[models.Contact]:
@@ -85,7 +85,8 @@ def get_contact(db: Session, user_id: int, contact_id: int) -> models.Contact:
 def get_chat(db: Session, user_id: int, chat_id: int) -> models.Chat:
     return (
         db.query(models.Chat)
-        .filter(models.Chat.user_id == user_id, models.Chat.chat_id == chat_id)
+        .join(models.Connector)
+        .filter(models.Connector.user_id == user_id, models.Chat.chat_id == chat_id)
         .first()
     )
 

@@ -120,7 +120,7 @@ class ServiceHandler:
                         db.commit()
 
                         new_chat = models.Chat(
-                            user_id=connector.user_id,
+                            connector_id=connector.connector_id,
                             chat_id=chat_id,
                             name=chat_data.get("name"),
                             is_muted=False,
