@@ -2,7 +2,17 @@ from fastapi import FastAPI
 from fastapi.params import Depends
 from setuptools_scm import get_version
 from starlette.responses import RedirectResponse
-from app.routers import auth, chats, connectors, contacts, debug, messages, sessions, users, info
+from app.routers import (
+    auth,
+    chats,
+    connectors,
+    contacts,
+    debug,
+    messages,
+    sessions,
+    users,
+    info,
+)
 from app.dependencies import mqtt
 import logging
 from fastapi_mqtt import FastMQTT, MQQTConfig
@@ -32,22 +42,27 @@ async def redirect_to_docs():
     response = RedirectResponse(url="/docs")
     return response
 
+
 @app.on_event("startup")
 async def startapp():
     await mqtt.connection()
+
 
 @app.on_event("shutdown")
 async def shutdown():
     await mqtt.client.disconnect()
 
+
 @mqtt.on_connect()
 def connect(client, flags, rc, properties):
-    mqtt.client.subscribe("moca/#") #subscribing mqtt topic 
+    mqtt.client.subscribe("moca/#")  # subscribing mqtt topic
     print("Connected: ", client, flags, rc, properties)
+
 
 @mqtt.on_disconnect()
 def disconnect(client, packet, exc=None):
     print("Disconnected")
+
 
 @mqtt.on_subscribe()
 def subscribe(client, mid, qos, properties):

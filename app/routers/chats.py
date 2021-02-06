@@ -11,10 +11,16 @@ from fastapi.exceptions import HTTPException
 from starlette.routing import request_response
 from app import crud
 from sqlalchemy.orm import Session
-from app.dependencies import get_current_user, get_current_verified_user, get_db, get_pagination
+from app.dependencies import (
+    get_current_user,
+    get_current_verified_user,
+    get_db,
+    get_pagination,
+)
 from fastapi.param_functions import Depends
 from app.schemas import (
-    ChatResponse, Pagination,
+    ChatResponse,
+    Pagination,
     Pin,
     RegisterRequest,
     User,
@@ -33,18 +39,24 @@ async def get_chats(
     db: Session = Depends(get_db),
 ):
     """Get a list of all chats the user has."""
-    
-    chats_with_message = db.query(
-        models.Chat,
-        models.Connector,
-        models.Message,
-        func.max(models.Message.sent_datetime)
-    ).join(models.Connector).join(models.Message).group_by(
-        models.Message.chat_id
-    ).filter(
-        models.Connector.user_id == current_user.user_id
-    ).order_by(desc_op(models.Message.sent_datetime)).limit(pagination.count).offset(pagination.page * pagination.count).all()
-    
+
+    chats_with_message = (
+        db.query(
+            models.Chat,
+            models.Connector,
+            models.Message,
+            func.max(models.Message.sent_datetime),
+        )
+        .join(models.Connector)
+        .join(models.Message)
+        .group_by(models.Message.chat_id)
+        .filter(models.Connector.user_id == current_user.user_id)
+        .order_by(desc_op(models.Message.sent_datetime))
+        .limit(pagination.count)
+        .offset(pagination.page * pagination.count)
+        .all()
+    )
+
     if not chats_with_message:
         return []
 
@@ -61,7 +73,9 @@ async def get_chats(
                 contact_id=chat_with_message[2].contact_id,
                 message=json.loads(chat_with_message[2].message),
                 sent_datetime=chat_with_message[2].sent_datetime,
-            ) if chat_with_message[2] else None,
+            )
+            if chat_with_message[2]
+            else None,
         )
         for chat_with_message in chats_with_message
     ]

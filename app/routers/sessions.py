@@ -10,9 +10,11 @@ from sqlalchemy.orm import Session
 from app.dependencies import get_current_user, get_current_verified_user, get_db
 from fastapi.param_functions import Depends
 from app.schemas import (
-    AuthUser, ChatResponse,
+    AuthUser,
+    ChatResponse,
     Pin,
-    RegisterRequest, SessionResponse,
+    RegisterRequest,
+    SessionResponse,
     User,
     UserResponse,
     VerifyRequest,
@@ -34,14 +36,20 @@ async def get_sessions(
 ):
     """Get a list of all active sessions the user has."""
 
-    sessions = db.query(models.Session).filter(models.Session.user_id == current_user.user_id, models.Session.valid_until > datetime.now()).all()
+    sessions = (
+        db.query(models.Session)
+        .filter(
+            models.Session.user_id == current_user.user_id,
+            models.Session.valid_until > datetime.now(),
+        )
+        .all()
+    )
 
     if not sessions:
         return []
 
-    print(sessions)
-
     return sessions
+
 
 @router.get("/current", response_model=SessionResponse)
 async def get_session(
@@ -50,9 +58,18 @@ async def get_session(
 ):
     """Get the current session."""
 
-    session = db.query(models.Session).filter(models.Session.user_id == current_user.user_id, models.Session.session_id == current_user.session_id, models.Session.valid_until > datetime.now()).first()
+    session = (
+        db.query(models.Session)
+        .filter(
+            models.Session.user_id == current_user.user_id,
+            models.Session.session_id == current_user.session_id,
+            models.Session.valid_until > datetime.now(),
+        )
+        .first()
+    )
 
     return session
+
 
 @router.get("/{session_id}", response_model=SessionResponse)
 async def get_session(
@@ -62,25 +79,33 @@ async def get_session(
 ):
     """Get the current session."""
 
-    session = db.query(models.Session).filter(models.Session.session_id == session_id, models.Session.valid_until > datetime.now()).first()
+    session = (
+        db.query(models.Session)
+        .filter(
+            models.Session.session_id == session_id,
+            models.Session.valid_until > datetime.now(),
+        )
+        .first()
+    )
 
     if not session:
         raise SESSION_NOT_FOUND
 
     return session
 
-@router.delete(
-    "", status_code=status.HTTP_204_NO_CONTENT, response_class=Response
-)
+
+@router.delete("", status_code=status.HTTP_204_NO_CONTENT, response_class=Response)
 async def delete_all_but_this_session(
     current_user: AuthUser = Depends(get_current_verified_user),
     db: Session = Depends(get_db),
 ):
     """Logout from all sessions (except the current one)."""
 
-    db.query(models.Session).filter(models.Session.user_id == current_user.user_id, models.Session.session_id != current_user.session_id).delete()
+    db.query(models.Session).filter(
+        models.Session.user_id == current_user.user_id,
+        models.Session.session_id != current_user.session_id,
+    ).delete()
     db.commit()
-
 
 
 @router.delete(
@@ -93,6 +118,8 @@ async def delete_session(
 ):
     """Logout from one session."""
 
-    db.query(models.Session).filter(models.Session.user_id == current_user.user_id, models.Session.session_id == session_id).delete()
+    db.query(models.Session).filter(
+        models.Session.user_id == current_user.user_id,
+        models.Session.session_id == session_id,
+    ).delete()
     db.commit()
-

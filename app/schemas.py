@@ -43,21 +43,24 @@ class Token(BaseModel):
     access_token: str
     token_type: str
 
+
 class MessageType(str, Enum):
-    unsupported = 'unsupported'
-    text = 'text'
-    image = 'image'
-    audio = 'audio'
-    voice = 'voice'
-    video = 'video'
-    gif = 'gif'
-    document = 'document'
-    contact = 'contact'
-    geo = 'geo'
+    unsupported = "unsupported"
+    text = "text"
+    image = "image"
+    audio = "audio"
+    voice = "voice"
+    video = "video"
+    gif = "gif"
+    document = "document"
+    contact = "contact"
+    geo = "geo"
+
 
 class GeoPoint(BaseModel):
     lon: float
     lat: float
+
 
 class MessageContent(BaseModel):
     type: MessageType
@@ -127,11 +130,14 @@ class Connector(BaseModel):
     class Config:
         orm_mode = True
 
+
 class ConnectorResponse(Connector):
     connector_id: int
 
+
 class InitializeConnectorRequest(BaseModel):
     connector_type: str
+
 
 class Session(BaseModel):
     name: Optional[str]
@@ -140,8 +146,10 @@ class Session(BaseModel):
     class Config:
         orm_mode = True
 
+
 class SessionResponse(Session):
     session_id: int
+
 
 class Pagination(BaseModel):
     page: int

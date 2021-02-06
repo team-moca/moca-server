@@ -11,14 +11,21 @@ from fastapi.exceptions import HTTPException
 from starlette.routing import request_response
 from app import crud
 from sqlalchemy.orm import Session
-from app.dependencies import get_current_user, get_current_verified_user, get_db, get_pagination, get_pool
+from app.dependencies import (
+    get_current_user,
+    get_current_verified_user,
+    get_db,
+    get_pagination,
+    get_pool,
+)
 from fastapi.param_functions import Depends
 from app.schemas import (
     ChatResponse,
     DeleteMessageRequest,
     Message,
     MessageContent,
-    MessageResponse, Pagination,
+    MessageResponse,
+    Pagination,
     Pin,
     RegisterRequest,
     User,
@@ -47,7 +54,14 @@ async def get_messages(
             detail=f"The chat with id {chat_id} does not exist.",
         )
 
-    messages = db.query(models.Message).filter(models.Message.chat_id == chat_id).order_by(desc_op(models.Message.sent_datetime)).limit(pagination.count).offset(pagination.page * pagination.count).all()
+    messages = (
+        db.query(models.Message)
+        .filter(models.Message.chat_id == chat_id)
+        .order_by(desc_op(models.Message.sent_datetime))
+        .limit(pagination.count)
+        .offset(pagination.page * pagination.count)
+        .all()
+    )
 
     if not messages:
         return []
@@ -96,18 +110,26 @@ async def send_message(
         db.commit()
 
     else:
-        sent = await pool.get(f"{connector.connector_type}/{connector.connector_id}/{str(uuid.uuid4())}/send_message", {"chat_id": chat_id, "message": message.message.__dict__})
+        sent = await pool.get(
+            f"{connector.connector_type}/{connector.connector_id}/{str(uuid.uuid4())}/send_message",
+            {"chat_id": chat.internal_id, "message": message.message.__dict__},
+        )
         print(sent)
 
+        # This should never be null
+        # TODO check if that is actually the case
+        contact = db.query(models.Contact).filter(models.Contact.connector_id == connector_id).first()
+
+        print(contact)
 
         new_message = models.Message(
-            message_id=sent.get("message_id"),
+            internal_id=sent.get("message_id"),
             chat_id=chat_id,
-            contact_id=connector.connector_user_id,
+            contact_id=contact.contact_id,
             message=json.dumps(message.message.__dict__),
             sent_datetime=datetime.now(),
         )
-        db.merge(new_message)
+        db.add(new_message)
         db.commit()
 
     return MessageResponse(
@@ -155,9 +177,8 @@ async def edit_message(
     edit_message.message = json.dumps(message.__dict__)
     db.commit()
 
-@router.get(
-    "/{message_id}/media", response_class=Response
-)
+
+@router.get("/{message_id}/media", response_class=Response)
 async def download_media(
     chat_id: int,
     message_id: int,
@@ -180,7 +201,9 @@ async def download_media(
 
     uri = f"{chat_id}:{message_id}"
 
-    filename, mime, data = await pool.get_bytes(f"{connector.connector_type}/{connector_id}/{uuid.uuid4()}/get_media/{uri}", {})
+    filename, mime, data = await pool.get_bytes(
+        f"{connector.connector_type}/{connector_id}/{uuid.uuid4()}/get_media/{uri}", {}
+    )
 
     print(filename, mime)
 
@@ -189,6 +212,6 @@ async def download_media(
         return Response(data, media_type=mime)
 
     raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"File {filename} does not exist.",
-        )
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"File {filename} does not exist.",
+    )

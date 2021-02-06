@@ -7,10 +7,16 @@ from fastapi.exceptions import HTTPException
 from starlette.routing import request_response
 from app import crud
 from sqlalchemy.orm import Session
-from app.dependencies import get_current_user, get_current_verified_user, get_db, get_pagination
+from app.dependencies import (
+    get_current_user,
+    get_current_verified_user,
+    get_db,
+    get_pagination,
+)
 from fastapi.param_functions import Depends
 from app.schemas import (
-    ContactResponse, Pagination,
+    ContactResponse,
+    Pagination,
     Pin,
     RegisterRequest,
     User,
@@ -30,10 +36,18 @@ async def get_contacts(
 ):
     """Get a list of all contacts the user has."""
 
-    contacts = db.query(models.Contact).join(models.Connector).filter(
-        models.Connector.user_id == current_user.user_id,
-        models.Contact.connector_id == models.Connector.connector_id
-    ).order_by(models.Contact.name).limit(pagination.count).offset(pagination.page * pagination.count).all()
+    contacts = (
+        db.query(models.Contact)
+        .join(models.Connector)
+        .filter(
+            models.Connector.user_id == current_user.user_id,
+            models.Contact.connector_id == models.Connector.connector_id,
+        )
+        .order_by(models.Contact.name)
+        .limit(pagination.count)
+        .offset(pagination.page * pagination.count)
+        .all()
+    )
 
     if not contacts:
         return []

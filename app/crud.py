@@ -68,17 +68,53 @@ def verify_user(db: Session, request: schemas.VerifyRequest):
 
 
 def get_chats_for_user(db: Session, user_id: int) -> List[models.Chat]:
-    return db.query(models.Chat).join(models.Connector).filter(models.Connector.user_id == user_id).all()
+    return (
+        db.query(models.Chat)
+        .join(models.Connector)
+        .filter(models.Connector.user_id == user_id)
+        .all()
+    )
 
 
 def get_contacts_for_user(db: Session, user_id: int) -> List[models.Contact]:
-    contacts = db.query(models.Contact).join(models.Connector).filter(models.Connector.user_id == user_id, models.Contact.connector_id == models.Connector.connector_id).all()
+    contacts = (
+        db.query(models.Contact)
+        .join(models.Connector)
+        .filter(
+            models.Connector.user_id == user_id,
+            models.Contact.connector_id == models.Connector.connector_id,
+        )
+        .all()
+    )
     return contacts
 
 
 def get_contact(db: Session, user_id: int, contact_id: int) -> models.Contact:
     return (
-        db.query(models.Contact).join(models.Connector).filter(models.Connector.user_id == user_id, models.Contact.is_self == True, models.Contact.connector_id == models.Connector.connector_id, models.Contact.contact_id == contact_id).first()
+        db.query(models.Contact)
+        .join(models.Connector)
+        .filter(
+            models.Connector.user_id == user_id,
+            models.Contact.is_self == True,
+            models.Contact.connector_id == models.Connector.connector_id,
+            models.Contact.contact_id == contact_id,
+        )
+        .first()
+    )
+
+
+def get_contact_from_connector(
+    db: Session, user_id: int, connector_id: int, internal_contact_id: str
+) -> models.Contact:
+    return (
+        db.query(models.Contact)
+        .join(models.Connector)
+        .filter(
+            models.Connector.user_id == user_id,
+            models.Connector.connector_id == connector_id,
+            models.Contact.internal_id == internal_contact_id,
+        )
+        .first()
     )
 
 
@@ -109,8 +145,16 @@ def get_last_message(db: Session, user_id: int, chat_id: int):
         else None
     )
 
+
 def get_connector(db: Session, user_id: int, connector_id: int) -> models.Connector:
-    connector = db.query(models.Connector).filter(models.Connector.user_id == user_id, models.Connector.connector_id == connector_id).first()
+    connector = (
+        db.query(models.Connector)
+        .filter(
+            models.Connector.user_id == user_id,
+            models.Connector.connector_id == connector_id,
+        )
+        .first()
+    )
 
     if not connector:
         raise HTTPException(
@@ -120,6 +164,63 @@ def get_connector(db: Session, user_id: int, connector_id: int) -> models.Connec
 
     return connector
 
-def get_connector_by_connector_id(db: Session, connector_type: str, connector_id: int) -> models.Connector:
-    connector = db.query(models.Connector).filter(models.Connector.connector_type == connector_type, models.Connector.connector_id == connector_id).first()
+
+def get_connector_by_connector_id(
+    db: Session, connector_type: str, connector_id: int
+) -> models.Connector:
+    connector = (
+        db.query(models.Connector)
+        .filter(
+            models.Connector.connector_type == connector_type,
+            models.Connector.connector_id == connector_id,
+        )
+        .first()
+    )
     return connector
+
+
+def add_or_update_message(
+    db: Session, connector_id: int, message: models.Message
+) -> models.Message:
+    existing_message = (
+        db.query(models.Message)
+        .join(models.Contact)
+        .filter(
+            models.Message.internal_id == message.internal_id,
+            models.Contact.connector_id == connector_id,
+        )
+        .first()
+    )
+
+    if existing_message:
+        message.message_id = existing_message.message_id
+        db.merge(message)
+    else:
+        db.add(message)
+
+    db.commit()
+
+    return message
+
+
+def add_or_update_contact(
+    db: Session, connector_id: int, contact: models.Contact
+) -> models.Contact:
+    existing_contact = (
+        db.query(models.Contact)
+        .filter(
+            models.Contact.internal_id == contact.internal_id,
+            models.Contact.connector_id == connector_id,
+        )
+        .first()
+    )
+
+    if existing_contact:
+        contact.contact_id = existing_contact.contact_id
+        db.merge(contact)
+    else:
+        db.add(contact)
+
+    db.commit()
+
+    return contact

@@ -24,9 +24,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 mqtt_config = MQQTConfig(host="127.0.0.1")
-mqtt = FastMQTT(
-    config=mqtt_config
-)
+mqtt = FastMQTT(config=mqtt_config)
+
 
 def get_db():
     db = SessionLocal()
@@ -35,8 +34,10 @@ def get_db():
     finally:
         db.close()
 
+
 pool = Pool(mqtt)
 handler = service_handler.ServiceHandler(pool)
+
 
 @mqtt.on_message()
 async def message(client, topic, payload, qos, properties):
@@ -44,9 +45,9 @@ async def message(client, topic, payload, qos, properties):
     pool.handle(topic, message)
     await handler.handle(topic, message)
 
+
 def get_pool():
     return pool
-
 
 
 def fake_user(username: str):
@@ -117,7 +118,14 @@ async def get_current_user(
         raise credentials_exception
 
     # get sessions and see if token is still valid
-    session = db.query(models.Session).filter(models.Session.session_id == int(jti), models.Session.valid_until > datetime.now()).first()
+    session = (
+        db.query(models.Session)
+        .filter(
+            models.Session.session_id == int(jti),
+            models.Session.valid_until > datetime.now(),
+        )
+        .first()
+    )
 
     if session is None:
         raise HTTPException(
@@ -135,6 +143,7 @@ async def get_current_verified_user(current_user: AuthUser = Depends(get_current
     if not current_user.is_verified:
         raise HTTPException(status_code=400, detail="User not verified.")
     return current_user
+
 
 async def get_pagination(page: int = 0, count: int = 10):
     return Pagination(page=page, count=count)

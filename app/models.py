@@ -13,6 +13,7 @@ class ContactsChatsRelationship(Base):
     contact = relationship("Contact", back_populates="chats")
     chat = relationship("Chat", back_populates="contacts")
 
+
 class User(Base):
     __tablename__ = "users"
 
@@ -37,13 +38,21 @@ class User(Base):
 class Contact(Base):
     __tablename__ = "contacts"
 
-    contact_id = Column(Integer, primary_key=True)
+    contact_id = Column(Integer, primary_key=True, autoincrement=True)
+    internal_id = Column(
+        String, comment="ID that the connector uses to refer to this contact."
+    )
+
     service_id = Column(String(255))
     name = Column(String(255))
     username = Column(String(255))
     phone = Column(String(255), nullable=True)
     avatar = Column(String(255))
-    connector_id = Column(Integer, ForeignKey("connectors.connector_id", ondelete="CASCADE"), nullable=True)
+    connector_id = Column(
+        Integer,
+        ForeignKey("connectors.connector_id", ondelete="CASCADE"),
+        nullable=True,
+    )
     is_self = Column(Boolean, nullable=False, default=False)
     messages = relationship("Message", backref="contacts", lazy=True)
 
@@ -56,8 +65,13 @@ class Contact(Base):
 class Chat(Base):
     __tablename__ = "chats"
 
-    chat_id = Column(Integer, primary_key=True)
-    connector_id = Column(Integer, ForeignKey("connectors.connector_id"), nullable=False)
+    chat_id = Column(Integer, primary_key=True, autoincrement=True)
+    internal_id = Column(
+        String, comment="ID that the connector uses to refer to this chat."
+    )
+    connector_id = Column(
+        Integer, ForeignKey("connectors.connector_id"), nullable=False
+    )
     name = Column(String(255))
     # chat_type = Column(String(255))
     is_muted = Column(Boolean())
@@ -73,9 +87,17 @@ class Chat(Base):
 class Message(Base):
     __tablename__ = "messages"
 
-    message_id = Column(Integer, primary_key=True)
-    contact_id = Column(Integer, ForeignKey("contacts.contact_id", ondelete="CASCADE"), nullable=False)
-    chat_id = Column(Integer, ForeignKey("chats.chat_id", ondelete="CASCADE"), nullable=False)
+    message_id = Column(Integer, primary_key=True, autoincrement=True)
+    internal_id = Column(
+        String, comment="ID that the connector uses to refer to this message."
+    )
+
+    contact_id = Column(
+        Integer, ForeignKey("contacts.contact_id", ondelete="CASCADE"), nullable=False
+    )
+    chat_id = Column(
+        Integer, ForeignKey("chats.chat_id", ondelete="CASCADE"), nullable=False
+    )
     message = Column(String())  # JSON
     sent_datetime = Column(DateTime())
 
@@ -96,6 +118,7 @@ class Connector(Base):
 
     def __repr__(self):
         return "<%s-Connector %s>" % (self.connector_type, self.connector_id)
+
 
 class Session(Base):
     __tablename__ = "sessions"

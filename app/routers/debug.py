@@ -40,21 +40,33 @@ async def seed(db: Session = Depends(get_db)):
     )
     db.add(new_user)
 
+    new_user = User(
+        username="tomschneider",
+        mail="tomschneider@stadt-winden.de",
+        hashed_password=get_hashed_password("tomschneider"),
+        is_verified=True,
+    )
+    db.add(new_user)
+
+    new_user = User(
+        username="nickschestag",
+        mail="nickschestag@stadt-winden.de",
+        hashed_password=get_hashed_password("nickschestag"),
+        is_verified=True,
+    )
+    db.add(new_user)
+
     # Create new login session
     new_session = SessionModel(
         user_id=1,
         name="iPhone von Jonas",
-        valid_until=datetime.now() + timedelta(days=30)
+        valid_until=datetime.now() + timedelta(days=30),
     )
     db.add(new_session)
 
     # Create Demo connector
 
-    new_connector = Connector(
-        connector_type="DEMO",
-        user_id=1,
-        connector_user_id="1"
-    )
+    new_connector = Connector(connector_type="DEMO", user_id=1, connector_user_id="1")
     db.add(new_connector)
     db.commit()
 
@@ -95,8 +107,16 @@ async def seed(db: Session = Depends(get_db)):
 
     db.commit()
 
-    db.add(models.ContactsChatsRelationship(contact_id=contact_jkahnwald.contact_id, chat_id=new_chat.chat_id))
-    db.add(models.ContactsChatsRelationship(contact_id=contact_mnielsen.contact_id, chat_id=new_chat.chat_id))
+    db.add(
+        models.ContactsChatsRelationship(
+            contact_id=contact_jkahnwald.contact_id, chat_id=new_chat.chat_id
+        )
+    )
+    db.add(
+        models.ContactsChatsRelationship(
+            contact_id=contact_mnielsen.contact_id, chat_id=new_chat.chat_id
+        )
+    )
 
     # Create messages
 
