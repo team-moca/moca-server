@@ -36,6 +36,11 @@ from fastapi import APIRouter, status
 
 router = APIRouter(prefix="/chats/{chat_id}/messages", tags=["messages"])
 
+def prepare_message(chat_id, message_id, message):
+    msg = json.loads(message)
+    if 'url' in msg:
+        msg["url"] = f"/chats/{chat_id}/messages/{message_id}/media"
+    return msg
 
 @router.get("", response_model=List[MessageResponse])
 async def get_messages(
@@ -71,7 +76,7 @@ async def get_messages(
             message_id=message.message_id,
             contact_id=message.contact_id,
             sent_datetime=message.sent_datetime,
-            message=json.loads(message.message),
+            message=prepare_message(chat.chat_id, message.message_id, message.message),
         )
         for message in messages
     ]
@@ -197,9 +202,9 @@ async def download_media(
     connector_id = chat.contacts[0].contact.connector_id
     connector = crud.get_connector(db, current_user.user_id, connector_id)
 
-    print(connector_id)
+    message = db.query(models.Message).filter(models.Message.message_id == message_id).first()
 
-    uri = f"{chat_id}:{message_id}"
+    uri = f"{chat.internal_id}:{message.internal_id}"
 
     filename, mime, data = await pool.get_bytes(
         f"{connector.connector_type}/{connector_id}/{uuid.uuid4()}/get_media/{uri}", {}
