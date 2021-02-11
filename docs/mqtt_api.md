@@ -121,6 +121,8 @@ The service should answer to these requests with the same topic, but with `/resp
 
 `{service_type}/{connector_id}/{uuid}/get_media_file/{media_uri} {}`
 
+`{service_type}/{connector_id}/{uuid}/chats/{chat_id}/messages/{message_id}/get_media {}`
+
 ## Push API
 
 Use this to push data from the service to MOCA.

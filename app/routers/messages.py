@@ -204,10 +204,8 @@ async def download_media(
 
     message = db.query(models.Message).filter(models.Message.message_id == message_id).first()
 
-    uri = f"{chat.internal_id}:{message.internal_id}"
-
     filename, mime, data = await pool.get_bytes(
-        f"{connector.connector_type}/{connector_id}/{uuid.uuid4()}/get_media/{uri}", {}
+        f"{connector.connector_type}/{connector_id}/{uuid.uuid4()}/chats/{chat.internal_id}/messages/{message.internal_id}/get_media", {}
     )
 
     print(filename, mime)

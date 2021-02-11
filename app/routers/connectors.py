@@ -101,12 +101,12 @@ async def setup_connector(
 
         if (
             db.query(models.Contact)
-            .filter(models.Contact.internal_id == contact.get("id"), models.Contact.connector_id == connector_id)
+            .filter(models.Contact.internal_id == contact.get("contact_id"), models.Contact.connector_id == connector_id)
             .count()
             == 0
         ):
             new_contact = models.Contact(
-                internal_id=contact.get("id"),
+                internal_id=contact.get("contact_id"),
                 service_id=connector.connector_type,
                 name=contact.get("name"),
                 username=contact.get("username"),
@@ -117,7 +117,7 @@ async def setup_connector(
             db.add(new_contact)
 
         # 3. Create connector
-        connector.connector_user_id = contact.get("id")
+        connector.connector_user_id = contact.get("contact_id")
         db.commit()
 
     return response

@@ -1,4 +1,6 @@
 import uuid
+
+import sqlalchemy
 from app.pool import Pool
 from datetime import datetime
 import json
@@ -44,7 +46,7 @@ class ServiceHandler:
                         internal_contact_id = contact_data.get("contact_id")
 
                         maybe_contact = crud.get_contact_from_connector(
-                            db, connector.user_id, internal_contact_id
+                            db, connector.user_id, connector.connector_id, internal_contact_id
                         )
                         if maybe_contact:
                             new_contact = models.Contact(
@@ -83,7 +85,7 @@ class ServiceHandler:
                         ).first()
 
                         if not chat:
-                            new_chat = models.Chat(
+                            chat = models.Chat(
                                 connector_id=connector.connector_id,
                                 internal_id=internal_chat_id,
                                 name=chat_data.get("name"),
@@ -91,7 +93,7 @@ class ServiceHandler:
                                 is_archived=False,
                             )
 
-                            db.add(new_chat)
+                            db.add(chat)
                             db.commit()
 
                         
@@ -115,7 +117,7 @@ class ServiceHandler:
 
                             if not maybe_contact:
                                 contact = await self.get_contact(
-                                    connector.connector_id, internal_contact_id
+                                    connector.connector_type, connector.connector_id, internal_contact_id
                                 )
                                 print(f"Got contact from service: {contact.get('name')}")
                                 new_contact = models.Contact(
@@ -158,7 +160,7 @@ class ServiceHandler:
                                 )
                                 if not c:
                                     contact = await self.get_contact(
-                                        connector.connector_id, participant
+                                        connector.connector_type, connector.connector_id, participant
                                     )
                                     print(f"Got contact from service: {contact.get('name')}")
                                     c = models.Contact(
@@ -179,7 +181,10 @@ class ServiceHandler:
                                         contact_id=c.contact_id, chat_id=chat_id
                                     )
                                 )
-                                db.commit()
+                                try:
+                                    db.commit()
+                                except sqlalchemy.exc.IntegrityError:
+                                    db.rollback()
 
                 elif command == "messages":
                     for message_data in payload:
@@ -196,7 +201,7 @@ class ServiceHandler:
                         )
                         if not c:
                             contact = await self.get_contact(
-                                connector.connector_id, internal_contact_id
+                                connector.connector_type, connector.connector_id, internal_contact_id
                             )
                             print(f"Got contact from service: {contact.get('name')}")
                             c = models.Contact(
@@ -212,7 +217,8 @@ class ServiceHandler:
                             db.add(c)
                             db.commit()
                         else:
-                            print(f"Contact {c.name} already exists. Skipping...")
+                            # print(f"Contact {c.name} already exists. Skipping...")
+                            pass
 
                         chat = (
                             db.query(models.Chat)
@@ -238,7 +244,7 @@ class ServiceHandler:
         finally:
             db.close()
 
-    async def get_contact(self, connector_id, contact_id):
+    async def get_contact(self, connector_type, connector_id, contact_id):
         return await self.pool.get(
-            f"telegram/{connector_id}/{str(uuid.uuid4())}/get_contact/{contact_id}", {}
+            f"{connector_type}/{connector_id}/{str(uuid.uuid4())}/get_contact/{contact_id}", {}
         )
