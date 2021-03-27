@@ -13,17 +13,20 @@ from fastapi import HTTPException, status
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 import json
+import os
 
 # WARNING! This is a dev key only. DO NOT use this in production.
-SECRET_KEY = "f61e42feaed37bec38837b107c4ee1b02c2c0493b240dc5f66865aa1596976f6"
+SECRET_KEY = os.getenv("MOCA_SECRET_KEY", "secret_key")
 ALGORITHM = "HS256"
+MQTT_HOST = os.getenv("MOCA_MQTT_HOST", "localhost")
+
 ACCESS_TOKEN_EXPIRE_DAYS = 30
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
-mqtt_config = MQQTConfig(host="127.0.0.1")
+mqtt_config = MQQTConfig(host=MQTT_HOST)
 mqtt = FastMQTT(config=mqtt_config)
 
 
