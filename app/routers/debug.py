@@ -4,17 +4,35 @@ import json
 from datetime import datetime, timedelta
 from app.models import Chat, Contact, Message, User, Connector, Session as SessionModel
 from app.dependencies import get_db, get_hashed_password
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
 from fastapi import Depends
 from setuptools_scm import get_version
 from sqlalchemy.orm import Session
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+import secrets
+import os
+
+USERNAME = os.getenv("MOCA_DEBUG_USERNAME")
+PASSWORD = os.getenv("MOCA_DEBUG_PASSWORD")
+
+security = HTTPBasic()
 
 
 router = APIRouter(prefix="/debug", tags=["debug"])
 
+def debug_login(credentials: HTTPBasicCredentials = Depends(security)):
+    correct_username = secrets.compare_digest(credentials.username, USERNAME)
+    correct_password = secrets.compare_digest(credentials.password, PASSWORD)
+    if not (correct_username and correct_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return credentials.username
 
 @router.post("/clear")
-async def clear(db: Session = Depends(get_db)):
+async def clear(db: Session = Depends(get_db), username: str = Depends(debug_login)):
     """Clears the database."""
 
     Base.metadata.drop_all()
@@ -24,7 +42,7 @@ async def clear(db: Session = Depends(get_db)):
 
 
 @router.post("/seed")
-async def seed(db: Session = Depends(get_db)):
+async def seed(db: Session = Depends(get_db), username: str = Depends(debug_login)):
     """Clears the database and fills it with demo data."""
 
     Base.metadata.drop_all()
