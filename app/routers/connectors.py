@@ -4,7 +4,7 @@ from app.pool import Pool
 from starlette.responses import Response
 from app import models
 from app.models import Connector
-from typing import Dict, List
+from typing import Dict, List, Optional
 from fastapi.exceptions import HTTPException
 from starlette.routing import request_response
 from app import crud
@@ -80,7 +80,7 @@ async def initialize_connector(
 @router.put("/{connector_id}")
 async def setup_connector(
     connector_id: int,
-    request: Dict,
+    request: Optional[Dict],
     current_user: UserResponse = Depends(get_current_verified_user),
     db: Session = Depends(get_db),
     pool: Pool = Depends(get_pool),
@@ -91,7 +91,7 @@ async def setup_connector(
 
     response = await pool.get(
         f"{connector.connector_type}/{connector_id}/{str(uuid.uuid4())}/configure",
-        request,
+        request or {},
     )
 
     if response.get("step") == "finished":
