@@ -1,4 +1,4 @@
-fastapi==0.62.0
+fastapi==0.65.2
 fastapi_mqtt==0.1.0
 python-jose[cryptography]==3.2.0
 passlib[bcrypt]==1.7.4
