@@ -95,7 +95,18 @@ class ServiceHandler:
 
                             db.add(chat)
                             db.commit()
+                        else:
+                            chat = models.Chat(
+                                chat_id = chat.chat_id,
+                                connector_id=connector.connector_id,
+                                internal_id=internal_chat_id,
+                                name=chat_data.get("name"),
+                                is_muted=False,
+                                is_archived=False,
+                            )
 
+                            db.update(chat)
+                            db.commit()
                         
 
                         chat_id = chat.chat_id
@@ -229,6 +240,18 @@ class ServiceHandler:
                             .first()
                         )
 
+                        if not chat:
+                            chat = models.Chat(
+                                connector_id=connector_id,
+                                internal_id=message_data.get("chat_id"),
+                                name="Loading...",
+                                is_muted=False,
+                                is_archived=False,
+                            )
+
+                            db.add(chat)
+                            db.commit()
+
                         new_last_message = models.Message(
                             internal_id=message_data.get("message_id"),
                             contact_id=c.contact_id,
@@ -240,6 +263,9 @@ class ServiceHandler:
                         )
 
                         crud.add_or_update_message(db, connector_id, new_last_message)
+                        
+
+
 
         finally:
             db.close()
