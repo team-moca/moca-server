@@ -12,4 +12,5 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 @router.get("/me", response_model=UserResponse)
 async def get_me(current_user: UserResponse = Depends(get_current_verified_user)):
+    """Get the currently logged in user."""
     return current_user

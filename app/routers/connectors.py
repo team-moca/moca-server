@@ -55,6 +55,7 @@ async def get_connector(
     current_user: UserResponse = Depends(get_current_verified_user),
     db: Session = Depends(get_db),
 ):
+    """Get a connector by id."""
     return crud.get_connector(db, current_user.user_id, connector_id)
 
 
@@ -146,6 +147,3 @@ async def delete_connector(
             models.Connector.connector_id == connector_id
         ).delete()
         db.commit()
-
-    # else:
-    #     print("ERROR DELETING CONNECTOR")

@@ -77,7 +77,7 @@ async def get_session(
     current_user: AuthUser = Depends(get_current_verified_user),
     db: Session = Depends(get_db),
 ):
-    """Get the current session."""
+    """Get a session by id."""
 
     session = (
         db.query(models.Session)
@@ -95,7 +95,7 @@ async def get_session(
 
 
 @router.delete("", status_code=status.HTTP_204_NO_CONTENT, response_class=Response)
-async def delete_all_but_this_session(
+async def logout_all_but_this_session(
     current_user: AuthUser = Depends(get_current_verified_user),
     db: Session = Depends(get_db),
 ):
@@ -111,7 +111,7 @@ async def delete_all_but_this_session(
 @router.delete(
     "/{session_id}", status_code=status.HTTP_204_NO_CONTENT, response_class=Response
 )
-async def delete_session(
+async def logout_from_session(
     session_id: int,
     current_user: UserResponse = Depends(get_current_verified_user),
     db: Session = Depends(get_db),

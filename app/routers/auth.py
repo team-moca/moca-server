@@ -35,6 +35,8 @@ async def login(
     x_moca_client=Header(None),
     db: Session = Depends(get_db),
 ):
+    """Login to the MOCA Server.
+    This will return an access token which can be used to authenticate all following requests."""
     user: models.User = authenticate_user(form_data.username, form_data.password, db)
     if not user:
         raise HTTPException(
@@ -68,7 +70,8 @@ async def login(
 async def refresh(
     user: AuthUser = Depends(get_current_verified_user), db: Session = Depends(get_db)
 ):
-    """Get a refresh token."""
+    """Get a refresh token.
+    Generating a refresh token will instantly invalidate all previous refresh tokens."""
 
     current_session = (
         db.query(models.Session)
@@ -107,6 +110,8 @@ async def logout(
 async def register_user(
     register_request: RegisterRequest, db: Session = Depends(get_db)
 ):
+    """Register a new user.
+    The user will have to verify their account via /auth/verify."""
     db_user = crud.get_user_by_username(db, username=register_request.username)
     if db_user:
         raise HTTPException(
@@ -118,4 +123,6 @@ async def register_user(
 
 @router.post("/verify")
 async def verify_user(verify_request: VerifyRequest, db: Session = Depends(get_db)):
+    """Verify a user.
+    After verification, the user can login via /auth/login."""
     return crud.verify_user(db, verify_request)

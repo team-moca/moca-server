@@ -6,8 +6,8 @@ from pydantic.fields import Field
 
 
 class Info(BaseModel):
-    current_version: str
-    last_supported_version: str
+    current_version: str = Field(description="The current version of the server.")
+    last_supported_version: str = Field(description="The last server version the current version is backwards-compatible with.")
 
 
 class User(BaseModel):
@@ -58,15 +58,15 @@ class MessageType(str, Enum):
 
 
 class GeoPoint(BaseModel):
-    lon: float
-    lat: float
+    lon: float = Field(title="Longitude")
+    lat: float = Field(title="Latitude")
 
 
 class MessageContent(BaseModel):
     type: MessageType
     content: Optional[str]
-    url: Optional[str]
-    geo_point: Optional[GeoPoint]
+    url: Optional[str] = Field(description="URL to download the media file. Only filled if type is a media type.")
+    geo_point: Optional[GeoPoint] = Field(description="The geo point. Only filled if type is geo.")
 
 
 class Message(BaseModel):
@@ -112,7 +112,7 @@ class Contact(BaseModel):
     username: Optional[str]
     phone: Optional[str]
     avatar: Optional[str]
-    is_self: bool
+    is_self: bool= Field(description="True if the contact is a contact of the current user.")
 
     class Config:
         orm_mode = True

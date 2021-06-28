@@ -90,7 +90,7 @@ async def send_message(
     current_user: UserResponse = Depends(get_current_verified_user),
     db: Session = Depends(get_db),
 ):
-
+    """Send a message to a chat."""
     chat = crud.get_chat(db, current_user.user_id, chat_id)
 
     if not chat:
@@ -155,6 +155,8 @@ async def delete_message(
     current_user: UserResponse = Depends(get_current_verified_user),
     db: Session = Depends(get_db),
 ):
+    """Delete a message.
+    Not all services support message deletion."""
     db.query(models.Message).filter(
         models.Message.chat_id == chat_id, models.Message.message_id == message_id
     ).delete()
@@ -171,6 +173,8 @@ async def edit_message(
     current_user: UserResponse = Depends(get_current_verified_user),
     db: Session = Depends(get_db),
 ):
+    """Edit a message.
+    Not all services support message editing."""
     edit_message = (
         db.query(models.Message)
         .filter(
@@ -191,6 +195,8 @@ async def download_media(
     pool: Pool = Depends(get_pool),
     db: Session = Depends(get_db),
 ):
+    """Download a media file.
+    Not all messages have a media file attached to it."""
     chat = crud.get_chat(db, current_user.user_id, chat_id)
 
     if not chat:

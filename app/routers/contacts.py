@@ -61,4 +61,5 @@ async def get_contact(
     current_user: UserResponse = Depends(get_current_verified_user),
     db: Session = Depends(get_db),
 ):
+    """Get a contact by id."""
     return crud.get_contact(db, current_user.user_id, contact_id)
