@@ -105,7 +105,7 @@ class ServiceHandler:
                                 is_archived=False,
                             )
 
-                            db.update(chat)
+                            db.merge(chat)
                             db.commit()
                         
 
