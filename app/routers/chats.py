@@ -96,7 +96,6 @@ async def get_chat(
     contacts = []
 
     for rel in chat.contacts:
-        print(rel.__dict__)
 
         contact = crud.get_contact(db, current_user.user_id, rel.contact_id)
         contacts.append(ContactResponse(
@@ -106,8 +105,6 @@ async def get_chat(
             is_self=contact.is_self,
             service_id=contact.service_id
         ))
-
-    print(contacts)
 
     return ChatDetailsResponse(
         chat_id=chat_id,

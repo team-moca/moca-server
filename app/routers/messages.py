@@ -102,8 +102,6 @@ async def send_message(
     connector_id = chat.contacts[0].contact.connector_id
     connector = crud.get_connector(db, current_user.user_id, connector_id)
 
-    print(connector_id)
-
     if connector.connector_type == "DEMO":
         new_message = models.Message(
             chat_id=chat_id,
@@ -119,12 +117,9 @@ async def send_message(
             f"{connector.connector_type}/{connector.connector_id}/{str(uuid.uuid4())}/send_message",
             {"chat_id": chat.internal_id, "message": message.message.__dict__},
         )
-        print(sent)
 
         # This should never be null
         contact = db.query(models.Contact).filter(models.Contact.connector_id == connector_id).first()
-
-        print(contact)
 
         new_message = models.Message(
             crud.get_id(connector.connector_id, sent.get("message_id")),
@@ -213,8 +208,6 @@ async def download_media(
     filename, mime, data = await pool.get_bytes(
         f"{connector.connector_type}/{connector_id}/{uuid.uuid4()}/chats/{chat.internal_id}/messages/{message.internal_id}/get_media", {}
     )
-
-    print(filename, mime)
 
     if data:
 

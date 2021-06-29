@@ -56,14 +56,12 @@ async def shutdown():
 @mqtt.on_connect()
 def connect(client, flags, rc, properties):
     mqtt.client.subscribe("moca/#")  # subscribing mqtt topic
-    print("Connected: ", client, flags, rc, properties)
 
 
 @mqtt.on_disconnect()
 def disconnect(client, packet, exc=None):
-    print("Disconnected")
-
+    pass
 
 @mqtt.on_subscribe()
 def subscribe(client, mid, qos, properties):
-    print("subscribed", client, mid, qos, properties)
+    pass

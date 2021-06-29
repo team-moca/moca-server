@@ -81,7 +81,6 @@ def verify_password(plain: str, hashed: str):
 
 
 def get_hashed_password(password):
-    print(f"Hashed password: {pwd_context.hash(password)}")
     return pwd_context.hash(password)
 
 
@@ -89,10 +88,8 @@ def authenticate_user(username: str, password: str, db: Session):
     user = crud.get_user_by_username(db, username)
 
     if not user:
-        print(f"No user called {username}.")
         return False
     if not verify_password(password, user.hashed_password):
-        print(f"Password wrong.")
         return False
 
     return user
@@ -113,11 +110,9 @@ async def get_current_user(
         if sub is None or jti is None:
             raise credentials_exception
     except JWTError as e:
-        print("A", e)
         raise credentials_exception
     user = crud.get_user(db, int(sub))
     if user is None:
-        print("B")
         raise credentials_exception
 
     # get sessions and see if token is still valid

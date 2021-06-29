@@ -18,7 +18,7 @@ class User(Base):
     __tablename__ = "users"
 
     user_id = Column(Integer, primary_key=True)
-    username = Column(String(255), unique=True)
+    username = Column(String(255))
     mail = Column(String(255))
     hashed_password = Column(String(255))
     is_verified = Column(Boolean())
@@ -69,7 +69,7 @@ class Chat(Base):
 
     chat_id = Column(Integer, primary_key=True, autoincrement=True)
     internal_id = Column(
-        String, comment="ID that the connector uses to refer to this chat.", unique=True
+        String, comment="ID that the connector uses to refer to this chat."
     )
     connector_id = Column(
         Integer, ForeignKey("connectors.connector_id"), nullable=False
@@ -93,7 +93,6 @@ class Message(Base):
     internal_id = Column(
         String,
         comment="ID that the connector uses to refer to this message.",
-        unique=True,
     )
 
     contact_id = Column(

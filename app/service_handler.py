@@ -38,7 +38,6 @@ class ServiceHandler:
                 )
 
                 if not connector:
-                    print("No connector configured.")
                     return
 
                 if command == "contacts":
@@ -101,9 +100,6 @@ class ServiceHandler:
                                     connector.connector_id,
                                     internal_contact_id,
                                 )
-                                print(
-                                    f"Got contact from service: {contact.get('name')}"
-                                )
                                 new_contact = models.Contact(
                                     contact_id=crud.get_id(
                                         connector.connector_id, internal_contact_id
@@ -151,9 +147,6 @@ class ServiceHandler:
                                         connector.connector_id,
                                         participant,
                                     )
-                                    print(
-                                        f"Got contact from service: {contact.get('name')}"
-                                    )
                                     c = models.Contact(
                                         contact_id=crud.get_id(
                                             connector.connector_id, participant
@@ -199,7 +192,6 @@ class ServiceHandler:
                                 connector.connector_id,
                                 internal_contact_id,
                             )
-                            print(f"Got contact from service: {contact.get('name')}")
                             c = models.Contact(
                                 contact_id=crud.get_id(
                                     connector.connector_id, internal_contact_id
@@ -216,7 +208,6 @@ class ServiceHandler:
                             db.merge(c)
                             db.commit()
                         else:
-                            # print(f"Contact {c.name} already exists. Skipping...")
                             pass
 
                         chat = (
@@ -252,7 +243,7 @@ class ServiceHandler:
                             chat_id=chat.chat_id,
                             message=json.dumps(message_data.get("message")),
                             sent_datetime=datetime.fromisoformat(
-                                message_data.get("sent_datetime")
+                                message_data.get("sent_datetime").split("Z")[0]
                             ),
                         )
 
