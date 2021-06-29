@@ -95,7 +95,6 @@ def get_contact(db: Session, user_id: int, contact_id: int) -> models.Contact:
         .join(models.Connector)
         .filter(
             models.Connector.user_id == user_id,
-            models.Contact.is_self == True,
             models.Contact.connector_id == models.Connector.connector_id,
             models.Contact.contact_id == contact_id,
         )

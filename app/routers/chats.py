@@ -1,5 +1,6 @@
 from datetime import datetime
 import json
+from os import name
 from sqlalchemy.sql.functions import func
 from sqlalchemy.sql.operators import desc_op
 from starlette.responses import Response
@@ -10,7 +11,7 @@ from typing import List
 from fastapi.exceptions import HTTPException
 from starlette.routing import request_response
 from app import crud
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.dependencies import (
     get_current_user,
     get_current_verified_user,
@@ -19,7 +20,9 @@ from app.dependencies import (
 )
 from fastapi.param_functions import Depends
 from app.schemas import (
+    ChatDetailsResponse,
     ChatResponse,
+    ContactResponse,
     Pagination,
     Pin,
     RegisterRequest,
@@ -79,6 +82,43 @@ async def get_chats(
         )
         for chat_with_message in chats_with_message
     ]
+
+@router.get("/{chat_id}", response_model=ChatDetailsResponse)
+async def get_chat(
+    chat_id: int,
+    current_user: UserResponse = Depends(get_current_verified_user),
+    db: Session = Depends(get_db),
+):
+    """Get a detailed chat object. Contains information about the participants of the chat."""
+
+    chat = db.query(Chat).filter(Chat.chat_id == chat_id).first()
+
+    contacts = []
+
+    for rel in chat.contacts:
+        print(rel.__dict__)
+
+        contact = crud.get_contact(db, current_user.user_id, rel.contact_id)
+        contacts.append(ContactResponse(
+            contact_id=contact.contact_id,
+            connector_id=contact.connector_id,
+            name=contact.name,
+            is_self=contact.is_self,
+            service_id=contact.service_id
+        ))
+
+    print(contacts)
+
+    return ChatDetailsResponse(
+        chat_id=chat_id,
+        connector_id=chat.connector_id,
+        name=chat.name,
+        is_muted=chat.is_muted,
+        is_archived=chat.is_archived,
+        pin_position=chat.pin_position,
+        participants=contacts
+    )
+
 
 
 @router.delete(

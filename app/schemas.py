@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 from pydantic import BaseModel
 from pydantic.fields import Field
 
@@ -98,6 +98,7 @@ class ChatResponse(Chat):
     last_message: Optional[MessageResponse]
 
 
+
 class Pin(BaseModel):
     pin_position: int
 
@@ -121,6 +122,9 @@ class Contact(BaseModel):
 class ContactResponse(Contact):
     contact_id: int
 
+class ChatDetailsResponse(Chat):
+    chat_id: int
+    participants: List[ContactResponse]
 
 class Connector(BaseModel):
 
