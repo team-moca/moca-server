@@ -40,8 +40,9 @@ class Contact(Base):
 
     contact_id = Column(Integer, primary_key=True, autoincrement=True)
     internal_id = Column(
-        String, comment="ID that the connector uses to refer to this contact.",
-        unique=True
+        String,
+        comment="ID that the connector uses to refer to this contact.",
+        unique=True,
     )
 
     service_id = Column(String(255))
@@ -68,8 +69,7 @@ class Chat(Base):
 
     chat_id = Column(Integer, primary_key=True, autoincrement=True)
     internal_id = Column(
-        String, comment="ID that the connector uses to refer to this chat.",
-        unique=True
+        String, comment="ID that the connector uses to refer to this chat.", unique=True
     )
     connector_id = Column(
         Integer, ForeignKey("connectors.connector_id"), nullable=False
@@ -91,8 +91,9 @@ class Message(Base):
 
     message_id = Column(Integer, primary_key=True, autoincrement=True)
     internal_id = Column(
-        String, comment="ID that the connector uses to refer to this message.",
-        unique=True
+        String,
+        comment="ID that the connector uses to refer to this message.",
+        unique=True,
     )
 
     contact_id = Column(

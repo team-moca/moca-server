@@ -119,4 +119,3 @@ class Pool:
             real_topic = topic[:-10]
             if real_topic in self.topics.keys():
                 self.topics[real_topic] = 0
-

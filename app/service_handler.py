@@ -46,7 +46,9 @@ class ServiceHandler:
                         internal_contact_id = contact_data.get("contact_id")
 
                         contact = models.Contact(
-                            contact_id=crud.get_id(connector.connector_id, internal_contact_id),
+                            contact_id=crud.get_id(
+                                connector.connector_id, internal_contact_id
+                            ),
                             internal_id=internal_contact_id,
                             service_id=service,
                             name=contact_data.get("name"),
@@ -63,7 +65,9 @@ class ServiceHandler:
                         internal_chat_id = chat_data.get("chat_id")
 
                         chat = models.Chat(
-                            chat_id = crud.get_id(connector.connector_id, internal_chat_id),
+                            chat_id=crud.get_id(
+                                connector.connector_id, internal_chat_id
+                            ),
                             connector_id=connector.connector_id,
                             internal_id=internal_chat_id,
                             name=chat_data.get("name"),
@@ -73,7 +77,7 @@ class ServiceHandler:
 
                         db.merge(chat)
                         db.commit()
-                        
+
                         chat_id = chat.chat_id
 
                         last_message = chat_data.get("last_message")
@@ -93,11 +97,17 @@ class ServiceHandler:
 
                             if not maybe_contact:
                                 contact = await self.get_contact(
-                                    connector.connector_type, connector.connector_id, internal_contact_id
+                                    connector.connector_type,
+                                    connector.connector_id,
+                                    internal_contact_id,
                                 )
-                                print(f"Got contact from service: {contact.get('name')}")
+                                print(
+                                    f"Got contact from service: {contact.get('name')}"
+                                )
                                 new_contact = models.Contact(
-                                    contact_id=crud.get_id(connector.connector_id, internal_contact_id),
+                                    contact_id=crud.get_id(
+                                        connector.connector_id, internal_contact_id
+                                    ),
                                     internal_id=internal_contact_id,
                                     service_id=connector.connector_type,
                                     connector_id=connector.connector_id,
@@ -137,11 +147,17 @@ class ServiceHandler:
                                 )
                                 if not c:
                                     contact = await self.get_contact(
-                                        connector.connector_type, connector.connector_id, participant
+                                        connector.connector_type,
+                                        connector.connector_id,
+                                        participant,
                                     )
-                                    print(f"Got contact from service: {contact.get('name')}")
+                                    print(
+                                        f"Got contact from service: {contact.get('name')}"
+                                    )
                                     c = models.Contact(
-                                        contact_id=crud.get_id(connector.connector_id, participant),
+                                        contact_id=crud.get_id(
+                                            connector.connector_id, participant
+                                        ),
                                         internal_id=participant,
                                         service_id=connector.connector_type,
                                         connector_id=connector.connector_id,
@@ -179,11 +195,15 @@ class ServiceHandler:
                         )
                         if not c:
                             contact = await self.get_contact(
-                                connector.connector_type, connector.connector_id, internal_contact_id
+                                connector.connector_type,
+                                connector.connector_id,
+                                internal_contact_id,
                             )
                             print(f"Got contact from service: {contact.get('name')}")
                             c = models.Contact(
-                                contact_id=crud.get_id(connector.connector_id, internal_contact_id),
+                                contact_id=crud.get_id(
+                                    connector.connector_id, internal_contact_id
+                                ),
                                 internal_id=internal_contact_id,
                                 service_id=connector.connector_type,
                                 connector_id=connector.connector_id,
@@ -210,7 +230,9 @@ class ServiceHandler:
 
                         if not chat:
                             chat = models.Chat(
-                                chat_id=crud.get_id(connector.connector_id, message_data.get("chat_id")),
+                                chat_id=crud.get_id(
+                                    connector.connector_id, message_data.get("chat_id")
+                                ),
                                 connector_id=connector_id,
                                 internal_id=message_data.get("chat_id"),
                                 name="Loading...",
@@ -222,7 +244,9 @@ class ServiceHandler:
                             db.commit()
 
                         new_last_message = models.Message(
-                            message_id=crud.get_id(connector.connector_id, message_data.get("message_id")),
+                            message_id=crud.get_id(
+                                connector.connector_id, message_data.get("message_id")
+                            ),
                             internal_id=message_data.get("message_id"),
                             contact_id=c.contact_id,
                             chat_id=chat.chat_id,
@@ -231,15 +255,15 @@ class ServiceHandler:
                                 message_data.get("sent_datetime")
                             ),
                         )
-                        
+
                         db.merge(new_last_message)
                         db.commit()
-                
 
         finally:
             db.close()
 
     async def get_contact(self, connector_type, connector_id, contact_id):
         return await self.pool.get(
-            f"{connector_type}/{connector_id}/{str(uuid.uuid4())}/get_contact/{contact_id}", {}
+            f"{connector_type}/{connector_id}/{str(uuid.uuid4())}/get_contact/{contact_id}",
+            {},
         )

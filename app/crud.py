@@ -40,7 +40,7 @@ def create_user(db: Session, user: schemas.RegisterRequest):
         verification_code=verification_code,
         created_at=datetime.now(),
     )
-    db.add(db_user) # add is ok here
+    db.add(db_user)  # add is ok here
     db.commit()
     db.refresh(db_user)
 
@@ -176,6 +176,7 @@ def get_connector_by_connector_id(
         .first()
     )
     return connector
+
 
 def get_id(connector_id: int, internal_id: str):
     return hash(internal_id) ^ connector_id

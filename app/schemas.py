@@ -7,7 +7,9 @@ from pydantic.fields import Field
 
 class Info(BaseModel):
     current_version: str = Field(description="The current version of the server.")
-    last_supported_version: str = Field(description="The last server version the current version is backwards-compatible with.")
+    last_supported_version: str = Field(
+        description="The last server version the current version is backwards-compatible with."
+    )
 
 
 class User(BaseModel):
@@ -65,8 +67,12 @@ class GeoPoint(BaseModel):
 class MessageContent(BaseModel):
     type: MessageType
     content: Optional[str]
-    url: Optional[str] = Field(description="URL to download the media file. Only filled if type is a media type.")
-    geo_point: Optional[GeoPoint] = Field(description="The geo point. Only filled if type is geo.")
+    url: Optional[str] = Field(
+        description="URL to download the media file. Only filled if type is a media type."
+    )
+    geo_point: Optional[GeoPoint] = Field(
+        description="The geo point. Only filled if type is geo."
+    )
 
 
 class Message(BaseModel):
@@ -98,7 +104,6 @@ class ChatResponse(Chat):
     last_message: Optional[MessageResponse]
 
 
-
 class Pin(BaseModel):
     pin_position: int
 
@@ -113,7 +118,9 @@ class Contact(BaseModel):
     username: Optional[str]
     phone: Optional[str]
     avatar: Optional[str]
-    is_self: bool= Field(description="True if the contact is a contact of the current user.")
+    is_self: bool = Field(
+        description="True if the contact is a contact of the current user."
+    )
 
     class Config:
         orm_mode = True
@@ -122,9 +129,11 @@ class Contact(BaseModel):
 class ContactResponse(Contact):
     contact_id: int
 
+
 class ChatDetailsResponse(Chat):
     chat_id: int
     participants: List[ContactResponse]
+
 
 class Connector(BaseModel):
 
