@@ -1,5 +1,7 @@
 import uuid
 from datetime import datetime
+
+import sqlalchemy
 from app.pool import Pool
 import json
 from sqlalchemy.sql.operators import desc_op
@@ -122,21 +124,26 @@ async def send_message(
         contact = db.query(models.Contact).filter(models.Contact.connector_id == connector_id).first()
 
         new_message = models.Message(
-            crud.get_id(connector.connector_id, sent.get("message_id")),
+            message_id=crud.get_id(connector.connector_id, sent.get("message_id")),
             internal_id=sent.get("message_id"),
             chat_id=chat_id,
             contact_id=contact.contact_id,
             message=json.dumps(message.message.__dict__),
             sent_datetime=datetime.now(),
         )
-        db.merge(new_message)
-        db.commit()
+
+        try:
+            db.merge(new_message)
+            db.commit()
+        except sqlalchemy.exc.IntegrityError:
+            # happens when the service sends the message already back to the server via push api
+            pass
 
     return MessageResponse(
         message_id=new_message.message_id,
         contact_id=new_message.contact_id,
         sent_datetime=new_message.sent_datetime,
-        message=json.loads(new_message.message),
+        message=message.message.__dict__,
     )
 
 
