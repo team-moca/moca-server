@@ -72,7 +72,7 @@ async def initialize_connector(
         connector_type=request.connector_type,
         user_id=current_user.user_id,
     )
-    db.add(new_connector)
+    db.add(new_connector) # add is ok here
     db.commit()
 
     return new_connector
@@ -107,6 +107,7 @@ async def setup_connector(
             == 0
         ):
             new_contact = models.Contact(
+                contact_id=crud.get_id(connector.connector_id, contact.get("contact_id")),
                 internal_id=contact.get("contact_id"),
                 service_id=connector.connector_type,
                 name=contact.get("name"),
@@ -115,7 +116,7 @@ async def setup_connector(
                 connector_id=connector.connector_id,
                 is_self=True,
             )
-            db.add(new_contact)
+            db.merge(new_contact)
 
         # 3. Create connector
         connector.connector_user_id = contact.get("contact_id")

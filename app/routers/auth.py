@@ -51,7 +51,7 @@ async def login(
         name=x_moca_client if x_moca_client else user_agent,
         valid_until=datetime.now() + timedelta(days=30),
     )
-    db.add(new_session)
+    db.add(new_session) # add is ok here
     db.commit()
 
     access_token_expires = timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)

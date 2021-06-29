@@ -45,70 +45,35 @@ class ServiceHandler:
                     for contact_data in payload:
                         internal_contact_id = contact_data.get("contact_id")
 
-                        maybe_contact = crud.get_contact_from_connector(
-                            db, connector.user_id, connector.connector_id, internal_contact_id
+                        contact = models.Contact(
+                            contact_id=crud.get_id(connector.connector_id, internal_contact_id),
+                            internal_id=internal_contact_id,
+                            service_id=service,
+                            name=contact_data.get("name"),
+                            username=contact_data.get("username"),
+                            phone=contact_data.get("phone"),
+                            avatar=None,
+                            connector_id=connector.connector_id,
                         )
-                        if maybe_contact:
-                            new_contact = models.Contact(
-                                contact_id=maybe_contact.contact_id,
-                                internal_id=internal_contact_id,
-                                service_id=service,
-                                name=contact_data.get("name"),
-                                username=contact_data.get("username"),
-                                phone=contact_data.get("phone"),
-                                avatar=None,
-                                connector_id=connector.connector_id,
-                            )
-                            db.merge(new_contact)
-                            db.commit()
-                        else:
-                            new_contact = models.Contact(
-                                internal_id=internal_contact_id,
-                                service_id=service,
-                                name=contact_data.get("name"),
-                                username=contact_data.get("username"),
-                                phone=contact_data.get("phone"),
-                                avatar=None,
-                                connector_id=connector.connector_id,
-                            )
-                            db.add(new_contact)
-                            db.commit()
+                        db.merge(contact)
+                        db.commit()
+
                 elif command == "chats":
                     for chat_data in payload:
                         internal_chat_id = chat_data.get("chat_id")
 
-                        # TODO this should just merge the chats, because deleting a chat would
-                        # hurt the primary key constraints
-                        chat = db.query(models.Chat).filter(
-                            models.Chat.internal_id == internal_chat_id,
-                            models.Chat.connector_id == connector.connector_id,
-                        ).first()
+                        chat = models.Chat(
+                            chat_id = crud.get_id(connector.connector_id, internal_chat_id),
+                            connector_id=connector.connector_id,
+                            internal_id=internal_chat_id,
+                            name=chat_data.get("name"),
+                            is_muted=False,
+                            is_archived=False,
+                        )
 
-                        if not chat:
-                            chat = models.Chat(
-                                connector_id=connector.connector_id,
-                                internal_id=internal_chat_id,
-                                name=chat_data.get("name"),
-                                is_muted=False,
-                                is_archived=False,
-                            )
-
-                            db.add(chat)
-                            db.commit()
-                        else:
-                            chat = models.Chat(
-                                chat_id = chat.chat_id,
-                                connector_id=connector.connector_id,
-                                internal_id=internal_chat_id,
-                                name=chat_data.get("name"),
-                                is_muted=False,
-                                is_archived=False,
-                            )
-
-                            db.merge(chat)
-                            db.commit()
+                        db.merge(chat)
+                        db.commit()
                         
-
                         chat_id = chat.chat_id
 
                         last_message = chat_data.get("last_message")
@@ -132,6 +97,7 @@ class ServiceHandler:
                                 )
                                 print(f"Got contact from service: {contact.get('name')}")
                                 new_contact = models.Contact(
+                                    contact_id=crud.get_id(connector.connector_id, internal_contact_id),
                                     internal_id=internal_contact_id,
                                     service_id=connector.connector_type,
                                     connector_id=connector.connector_id,
@@ -141,7 +107,7 @@ class ServiceHandler:
                                     avatar=contact.get("avatar"),
                                     is_self=False,
                                 )
-                                db.add(new_contact)
+                                db.merge(new_contact)
                                 db.commit()
 
                                 contact_id = new_contact.contact_id
@@ -175,6 +141,7 @@ class ServiceHandler:
                                     )
                                     print(f"Got contact from service: {contact.get('name')}")
                                     c = models.Contact(
+                                        contact_id=crud.get_id(connector.connector_id, participant),
                                         internal_id=participant,
                                         service_id=connector.connector_type,
                                         connector_id=connector.connector_id,
@@ -184,10 +151,10 @@ class ServiceHandler:
                                         avatar=contact.get("avatar"),
                                         is_self=False,
                                     )
-                                    db.add(c)
+                                    db.merge(c)
                                     db.commit()
 
-                                db.add(
+                                db.merge(
                                     models.ContactsChatsRelationship(
                                         contact_id=c.contact_id, chat_id=chat_id
                                     )
@@ -216,6 +183,7 @@ class ServiceHandler:
                             )
                             print(f"Got contact from service: {contact.get('name')}")
                             c = models.Contact(
+                                contact_id=crud.get_id(connector.connector_id, internal_contact_id),
                                 internal_id=internal_contact_id,
                                 service_id=connector.connector_type,
                                 connector_id=connector.connector_id,
@@ -225,7 +193,7 @@ class ServiceHandler:
                                 avatar=contact.get("avatar"),
                                 is_self=False,
                             )
-                            db.add(c)
+                            db.merge(c)
                             db.commit()
                         else:
                             # print(f"Contact {c.name} already exists. Skipping...")
@@ -242,6 +210,7 @@ class ServiceHandler:
 
                         if not chat:
                             chat = models.Chat(
+                                chat_id=crud.get_id(connector.connector_id, message_data.get("chat_id")),
                                 connector_id=connector_id,
                                 internal_id=message_data.get("chat_id"),
                                 name="Loading...",
@@ -249,10 +218,11 @@ class ServiceHandler:
                                 is_archived=False,
                             )
 
-                            db.add(chat)
+                            db.merge(chat)
                             db.commit()
 
                         new_last_message = models.Message(
+                            message_id=crud.get_id(connector.connector_id, message_data.get("message_id")),
                             internal_id=message_data.get("message_id"),
                             contact_id=c.contact_id,
                             chat_id=chat.chat_id,
@@ -261,11 +231,10 @@ class ServiceHandler:
                                 message_data.get("sent_datetime")
                             ),
                         )
-
-                        crud.add_or_update_message(db, connector_id, new_last_message)
                         
-
-
+                        db.merge(new_last_message)
+                        db.commit()
+                
 
         finally:
             db.close()

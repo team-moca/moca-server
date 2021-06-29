@@ -40,7 +40,7 @@ def create_user(db: Session, user: schemas.RegisterRequest):
         verification_code=verification_code,
         created_at=datetime.now(),
     )
-    db.add(db_user)
+    db.add(db_user) # add is ok here
     db.commit()
     db.refresh(db_user)
 
@@ -177,49 +177,5 @@ def get_connector_by_connector_id(
     )
     return connector
 
-
-def add_or_update_message(
-    db: Session, connector_id: int, message: models.Message
-) -> models.Message:
-    existing_message = (
-        db.query(models.Message)
-        .join(models.Contact)
-        .filter(
-            models.Message.internal_id == message.internal_id,
-            models.Contact.connector_id == connector_id,
-        )
-        .first()
-    )
-
-    if existing_message:
-        message.message_id = existing_message.message_id
-        db.merge(message)
-    else:
-        db.add(message)
-
-    db.commit()
-
-    return message
-
-
-def add_or_update_contact(
-    db: Session, connector_id: int, contact: models.Contact
-) -> models.Contact:
-    existing_contact = (
-        db.query(models.Contact)
-        .filter(
-            models.Contact.internal_id == contact.internal_id,
-            models.Contact.connector_id == connector_id,
-        )
-        .first()
-    )
-
-    if existing_contact:
-        contact.contact_id = existing_contact.contact_id
-        db.merge(contact)
-    else:
-        db.add(contact)
-
-    db.commit()
-
-    return contact
+def get_id(connector_id: int, internal_id: str):
+    return hash(internal_id) ^ connector_id

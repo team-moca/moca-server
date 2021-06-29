@@ -111,7 +111,7 @@ async def send_message(
             message=json.dumps(message.message.__dict__),
             sent_datetime=datetime.now(),
         )
-        db.add(new_message)
+        db.add(new_message) # add is ok here
         db.commit()
 
     else:
@@ -127,13 +127,14 @@ async def send_message(
         print(contact)
 
         new_message = models.Message(
+            crud.get_id(connector.connector_id, sent.get("message_id")),
             internal_id=sent.get("message_id"),
             chat_id=chat_id,
             contact_id=contact.contact_id,
             message=json.dumps(message.message.__dict__),
             sent_datetime=datetime.now(),
         )
-        db.add(new_message)
+        db.merge(new_message)
         db.commit()
 
     return MessageResponse(
