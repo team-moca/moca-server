@@ -122,7 +122,6 @@ async def send_message(
         print(sent)
 
         # This should never be null
-        # TODO check if that is actually the case
         contact = db.query(models.Contact).filter(models.Contact.connector_id == connector_id).first()
 
         print(contact)
