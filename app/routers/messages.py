@@ -127,7 +127,7 @@ async def send_message(
             message_id=crud.get_id(connector.connector_id, sent.get("message_id")),
             internal_id=sent.get("message_id"),
             chat_id=chat_id,
-            contact_id=contact.contact_id,
+            contact_id=crud.get_id(connector.connector_id, contact.contact_id),
             message=json.dumps(message.message.__dict__),
             sent_datetime=datetime.now(),
         )
