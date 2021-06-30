@@ -124,10 +124,10 @@ async def send_message(
         contact = db.query(models.Contact).filter(models.Contact.connector_id == connector_id).first()
 
         new_message = models.Message(
-            message_id=crud.get_id(connector.connector_id, sent.get("message_id")),
+            message_id=crud.get_message_id(connector.connector_id, sent.get("message_id"), chat_id),
             internal_id=sent.get("message_id"),
             chat_id=chat_id,
-            contact_id=crud.get_id(connector.connector_id, contact.contact_id),
+            contact_id=contact.contact_id,
             message=json.dumps(message.message.__dict__),
             sent_datetime=datetime.now(),
         )

@@ -235,11 +235,11 @@ class ServiceHandler:
                             db.commit()
 
                         new_last_message = models.Message(
-                            message_id=crud.get_id(
-                                connector.connector_id, message_data.get("message_id")
+                            message_id=crud.get_message_id(
+                                connector.connector_id, message_data.get("message_id"), chat.chat_id
                             ),
                             internal_id=message_data.get("message_id"),
-                            contact_id=c.contact_id,
+                            contact_id=crud.get_id(connector.connector_id, internal_contact_id),
                             chat_id=chat.chat_id,
                             message=json.dumps(message_data.get("message")),
                             sent_datetime=datetime.fromisoformat(
