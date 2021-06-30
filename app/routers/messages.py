@@ -121,7 +121,7 @@ async def send_message(
         )
 
         # This should never be null
-        contact = db.query(models.Contact).filter(models.Contact.connector_id == connector_id).first()
+        contact = db.query(models.Contact).filter(models.Contact.connector_id == connector_id, models.Contact.is_self).first()
 
         new_message = models.Message(
             message_id=crud.get_message_id(connector.connector_id, sent.get("message_id"), chat_id),

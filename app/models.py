@@ -42,7 +42,6 @@ class Contact(Base):
     internal_id = Column(
         String,
         comment="ID that the connector uses to refer to this contact.",
-        unique=True,
     )
 
     service_id = Column(String(255))
