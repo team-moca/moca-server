@@ -182,4 +182,4 @@ def get_id(connector_id: int, internal_id: str):
     return hash(internal_id) ^ connector_id
 
 def get_message_id(connector_id: int, internal_id: str, chat_id: str):
-    return hash(message_id) ^ hash(internal_id) ^ connector_id
+    return hash(chat_id) ^ hash(internal_id) ^ connector_id
